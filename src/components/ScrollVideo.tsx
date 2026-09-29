@@ -16,7 +16,7 @@ export default function ScrollVideo() {
     let currentFrame = -1;
 
     const getFramePath = (index: number) =>
-      `/src/assets/scroll-frames/frame_${String(index + 1).padStart(4, '0')}.webp`;
+      `/scroll-frames/frame_${String(index + 1).padStart(4, '0')}.webp`;
 
     const drawFrame = (index: number) => {
       if (index === currentFrame) return;
