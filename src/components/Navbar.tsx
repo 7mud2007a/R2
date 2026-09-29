@@ -23,11 +23,22 @@ export default function AnimatedNavbar({ onNavigate }: NavbarProps) {
     openTl.current = gsap.timeline({ paused: true });
     closeTl.current = gsap.timeline({ paused: true });
 
+    const getOrigin = () => {
+      return window.innerWidth <= 640 ? '36px 36px' : '60px 60px';
+    };
+
+    const origin = getOrigin();
+
+    // Set initial clipPath using px units
+    gsap.set(el.querySelector('nav'), {
+      clipPath: `circle(0px at ${origin})`,
+    });
+
     // Open Timeline
     openTl.current
       .set(el.querySelector('.btn'), { pointerEvents: 'none' })
       .to(el.querySelector('nav'), {
-        clipPath: 'circle(200% at 60px 60px)',
+        clipPath: `circle(200% at ${getOrigin()})`,
         duration: 1.5,
         ease: 'power4.out',
       }, 0)
@@ -65,7 +76,7 @@ export default function AnimatedNavbar({ onNavigate }: NavbarProps) {
         ease: 'power4.out',
       }, 0)
       .to(el.querySelector('nav'), {
-        clipPath: 'circle(0px at 60px 60px)',
+        clipPath: `circle(0px at ${getOrigin()})`,
         duration: 1.2,
         ease: 'power4.out',
       }, '-=1')
@@ -124,7 +135,7 @@ export default function AnimatedNavbar({ onNavigate }: NavbarProps) {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 pointer-events-none" ref={containerRef}>
+    <header className="fixed top-0 left-0 right-0 w-full max-w-full z-50 pointer-events-none box-border" ref={containerRef}>
       <style dangerouslySetInnerHTML={{ __html: `
         @import url("https://fonts.googleapis.com/css2?family=Krona+One&display=swap");
 
@@ -133,12 +144,12 @@ export default function AnimatedNavbar({ onNavigate }: NavbarProps) {
           background: none;
           cursor: pointer;
           position: fixed;
-          left: 40px;
-          top: 36px;
+          left: 60px;
+          top: 60px;
           transform: translate(-50%, -50%);
-          width: 52px;
-          height: 52px;
-          border-radius: 16px;
+          width: 50px;
+          height: 50px;
+          border-radius: 20px;
           z-index: 60;
           outline: none;
           pointer-events: auto;
@@ -146,10 +157,10 @@ export default function AnimatedNavbar({ onNavigate }: NavbarProps) {
 
         @media (max-width: 640px) {
           .anim-nav-container button.btn {
-            left: 32px;
-            top: 32px;
-            width: 46px;
-            height: 46px;
+            left: 36px;
+            top: 36px;
+            width: 44px;
+            height: 44px;
           }
         }
 
@@ -162,8 +173,8 @@ export default function AnimatedNavbar({ onNavigate }: NavbarProps) {
 
         .anim-nav-container button.btn .icons svg {
           position: absolute;
-          width: 45%;
-          height: 45%;
+          width: 50%;
+          height: 50%;
           left: 50%;
           top: 50%;
           transform: translate(-50%, -50%);
@@ -183,7 +194,7 @@ export default function AnimatedNavbar({ onNavigate }: NavbarProps) {
           width: 100%;
           height: 100%;
           background: #223023;
-          border-radius: 16px;
+          border-radius: 25%;
           box-shadow: 0 8px 25px rgba(34, 48, 35, 0.4);
           transition: background 0.3s ease;
         }
@@ -195,20 +206,32 @@ export default function AnimatedNavbar({ onNavigate }: NavbarProps) {
         .anim-nav-container nav {
           position: fixed;
           inset: 0;
-          width: 100vw;
-          height: 100vh;
+          width: 100%;
+          max-width: 100%;
+          height: 100dvh;
           display: flex;
           justify-content: flex-start;
           align-items: center;
           background: #223023;
           clip-path: circle(0px at 60px 60px);
+          -webkit-clip-path: circle(0px at 60px 60px);
           z-index: 50;
           pointer-events: auto;
+          box-sizing: border-box;
+          overflow: hidden;
+        }
+
+        @media (max-width: 640px) {
+          .anim-nav-container nav {
+            clip-path: circle(0px at 36px 36px);
+            -webkit-clip-path: circle(0px at 36px 36px);
+          }
         }
 
         .anim-nav-container nav ul {
           margin-left: 12vw;
           list-style: none;
+          padding-right: 20px;
         }
 
         @media (max-width: 768px) {
@@ -217,9 +240,15 @@ export default function AnimatedNavbar({ onNavigate }: NavbarProps) {
           }
         }
 
+        @media (max-width: 480px) {
+          .anim-nav-container nav ul {
+            margin-left: 6vw;
+          }
+        }
+
         .anim-nav-container nav ul li {
           position: relative;
-          padding: 14px 0;
+          padding: 12px 0;
           cursor: pointer;
           transform: translateX(-200px);
           opacity: 0;
@@ -227,10 +256,10 @@ export default function AnimatedNavbar({ onNavigate }: NavbarProps) {
         }
 
         .anim-nav-container nav ul li span {
-          font-size: clamp(2.2rem, 5.5vw, 4.5rem);
+          font-size: clamp(1.8rem, 6vw, 4.5rem);
           font-family: "Krona One", sans-serif;
           font-weight: 700;
-          opacity: 0.4;
+          opacity: 0.35;
           transition: all 0.3s ease;
           color: #ffffff;
           letter-spacing: -0.02em;
@@ -244,7 +273,7 @@ export default function AnimatedNavbar({ onNavigate }: NavbarProps) {
           top: 50%;
           transform: translate(-50%, -50%) translateX(-50%);
           width: 25px;
-          height: 6px;
+          height: 8px;
           border-radius: 10px;
           background: #ffffff;
           opacity: 0;
@@ -265,36 +294,36 @@ export default function AnimatedNavbar({ onNavigate }: NavbarProps) {
         }
       ` }} />
 
-      <div className="anim-nav-container relative w-full h-full">
+      <div className="anim-nav-container relative w-full max-w-full h-full box-border">
         {/* Top Header Bar for Logo and Theme Switcher */}
-        <div className="fixed top-0 left-0 right-0 h-24 px-8 md:px-14 flex items-center justify-between z-40 pointer-events-auto backdrop-blur-md bg-white/30 dark:bg-[#070b08]/30 border-b border-black/5 dark:border-white/5 transition-colors duration-300">
+        <div className="fixed top-0 left-0 right-0 h-16 sm:h-20 md:h-24 px-3 sm:px-6 md:px-14 flex items-center justify-between z-40 pointer-events-auto backdrop-blur-md bg-white/30 dark:bg-[#070b08]/30 border-b border-black/5 dark:border-white/5 transition-colors duration-300 w-full max-w-full box-border">
           {/* Spacer for toggle button on left */}
-          <div className="w-16"></div>
+          <div className="w-12 sm:w-16 md:w-20 flex-shrink-0"></div>
 
           {/* Brand Logo Title */}
-          <div className="flex items-center space-x-3 cursor-pointer" onClick={() => handleNavClick('hero')}>
-            <span className="font-cinzel text-xl md:text-2xl font-bold tracking-[0.25em] text-slate-900 dark:text-white transition-colors duration-300">
+          <div className="flex items-center justify-center cursor-pointer min-w-0 px-1 overflow-hidden" onClick={() => handleNavClick('hero')}>
+            <span className="font-cinzel text-xs sm:text-lg md:text-2xl font-bold tracking-[0.12em] sm:tracking-[0.2em] md:tracking-[0.25em] text-slate-900 dark:text-white transition-colors duration-300 whitespace-nowrap truncate">
               VELTRION <span className="text-[#223023] dark:text-[#5a7d5c]">MOTORS</span>
             </span>
           </div>
 
           {/* Theme Toggle & CTA */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
             <button
               onClick={toggleTheme}
-              className="p-2.5 rounded-full bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 text-slate-900 dark:text-white transition-all duration-300 border border-black/10 dark:border-white/10"
+              className="p-1.5 sm:p-2.5 rounded-full bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 text-slate-900 dark:text-white transition-all duration-300 border border-black/10 dark:border-white/10"
               title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
               aria-label="Toggle Theme"
             >
               {theme === 'dark' ? (
-                <Sun className="w-4 h-4 text-amber-400" />
+                <Sun className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
               ) : (
-                <Moon className="w-4 h-4 text-slate-700" />
+                <Moon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-700" />
               )}
             </button>
             <button
               onClick={() => handleNavClick('contact')}
-              className="hidden sm:block px-5 py-2 text-xs font-semibold tracking-widest text-white uppercase bg-[#223023] hover:bg-[#2c3e2e] rounded-md transition-all duration-300 shadow-md hover:shadow-lg"
+              className="hidden sm:block px-4 md:px-5 py-2 text-[10px] md:text-xs font-semibold tracking-widest text-white uppercase bg-[#223023] hover:bg-[#2c3e2e] rounded-md transition-all duration-300 shadow-md hover:shadow-lg whitespace-nowrap"
             >
               Inquire
             </button>
