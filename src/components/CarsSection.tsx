@@ -20,68 +20,68 @@ export interface CarModel {
 
 const CARS_FLEET: CarModel[] = [
   {
-    id: 'veltrion-v12-hyper-gt',
-    name: 'Veltrion V12 Hyper GT',
-    tagline: 'The Ultimate Grand Tourer Redefined',
-    category: 'Hyper GT',
-    price: '$3,850,000',
-    hp: 1450,
-    acceleration: '1.85s',
-    topSpeed: '265 MPH',
-    range: '520 Miles',
-    drivetrain: 'Quad-Motor All-Wheel Drive',
+    id: 'mercedes-amg-s-63-e-performance',
+    name: 'Mercedes-AMG S 63 E PERFORMANCE',
+    tagline: 'High-Performance Luxury Sedan',
+    category: 'Luxury Saloon',
+    price: 'PRICE ON REQUEST',
+    hp: 791,
+    acceleration: '3.3s',
+    topSpeed: '180 MPH',
+    range: 'AMG 4MATIC+',
+    drivetrain: 'AMG Performance 4MATIC+',
     imagePlaceholder: '/images/cars/v12-hyper-gt.jpg',
     badge: 'FLAGSHIP',
-    description: 'Combining quad quantum electric motors with a lightweight carbon-fiber monocoque chassis, the V12 Hyper GT offers unmatched track agility and grand touring tranquility.',
-    features: ['Active Aero Wing', 'Acoustic Glass System', 'Quantum Torque Vectoring', 'Bespoke Saddle Leather']
+    description: 'The Mercedes-AMG S 63 E PERFORMANCE combines a handcrafted 4.0L V8 biturbo engine with an AMG-specific electric drive unit to deliver dominant power, first-class executive luxury, and high-performance hybrid engineering.',
+    features: ['Handcrafted 4.0L V8 Biturbo Hybrid', 'AMG ACTIVE RIDE CONTROL', 'Rear-Axle Steering', 'Bespoke Executive Lounge Cabin']
   },
   {
-    id: 'veltrion-apex-gtr',
-    name: 'Veltrion Apex GTR',
-    tagline: 'Track-Focused Aerodynamic Perfection',
+    id: 'bmw-m4-csl',
+    name: 'BMW M4 CSL',
+    tagline: 'Lightweight M Performance',
     category: 'Hypercar',
-    price: '$4,200,000',
-    hp: 1650,
-    acceleration: '1.68s',
-    topSpeed: '280 MPH',
-    range: '410 Miles',
-    drivetrain: 'Carbon-Vectoring Quad Drive',
+    price: 'PRICE ON REQUEST',
+    hp: 550,
+    acceleration: '3.7s',
+    topSpeed: '191 MPH',
+    range: 'RWD Track Spec',
+    drivetrain: 'Rear-Wheel Drive',
     imagePlaceholder: '/images/cars/apex-gtr.jpg',
-    badge: 'LIMITED (1 OF 25)',
-    description: 'Designed exclusively for motorsport enthusiasts seeking extreme cornering g-forces, active ground effect venturis, and raw electric power delivery.',
-    features: ['Magnesium Monoblock Wheels', 'Titanium Roll Cage', 'Downforce Generator', 'Race HUD Telemetry']
+    badge: 'LIMITED',
+    description: 'A track-honed masterpiece engineered with extreme lightweight carbon-fiber construction, a high-revving M TwinPower Turbo inline-6 engine, and uncompromised circuit aerodynamics.',
+    features: ['Carbon Fiber Reinforced Plastic Hood & Roof', 'M Carbon Full Bucket Seats', 'Track-Tuned M Precision Strut', 'Titanium Exhaust Silencer']
   },
   {
-    id: 'veltrion-phantom-s',
-    name: 'Veltrion Phantom S',
-    tagline: 'Ultra-Luxury Electric Saloon',
-    category: 'Luxury Saloon',
-    price: '$2,100,000',
-    hp: 1100,
-    acceleration: '2.4s',
-    topSpeed: '210 MPH',
-    range: '620 Miles',
-    drivetrain: 'Dual-Motor Rear-Biased AWD',
+    id: 'toyota-supra-mk4-turbo',
+    name: 'Toyota Supra MK4 Turbo',
+    tagline: 'The Legendary 2JZ Performance Icon',
+    category: 'Hypercar',
+    price: 'PRICE ON REQUEST',
+    hp: 320,
+    acceleration: '4.6s',
+    topSpeed: '155 MPH',
+    range: 'RWD Legend',
+    drivetrain: 'Rear-Wheel Drive',
     imagePlaceholder: '/images/cars/phantom-s.jpg',
-    badge: 'EXECUTIONS',
-    description: 'An oasis of silent luxury featuring air-suspension levitation technology, executive rear reclining suites, and autonomous highway cruising capabilities.',
-    features: ['Active Noise Cancellation', 'Executive Seating', 'Zero-Gravity Suspension', 'Silk & Carbon Interior']
+    badge: 'LEGENDARY',
+    description: 'The iconic fourth-generation Supra MK4 Turbo powered by the legendary 2JZ-GTE sequential twin-turbo inline-6, delivering timeless Japanese sports car heritage and unmatched tuning potential.',
+    features: ['2JZ-GTE Twin-Turbocharged Inline-6', 'Getrag 6-Speed Manual Transmission', 'Cockpit-Oriented Dashboard Layout', 'Active Aerodynamic Rear Wing']
   },
   {
-    id: 'veltrion-aero-roster',
-    name: 'Veltrion Aero Roadster',
-    tagline: 'Open-Air Electric Performance',
-    category: 'Roadster',
-    price: '$2,950,000',
-    hp: 1280,
-    acceleration: '1.95s',
-    topSpeed: '245 MPH',
-    range: '480 Miles',
-    drivetrain: 'Tri-Motor AWD',
+    id: 'nissan-gt-r-r35',
+    name: 'Nissan GT-R R35',
+    tagline: 'Twin-Turbocharged Japanese Performance',
+    category: 'Hypercar',
+    price: 'PRICE ON REQUEST',
+    hp: 565,
+    acceleration: '2.9s',
+    topSpeed: '195 MPH',
+    range: 'ATTESA AWD',
+    drivetrain: 'ATTESA E-TS AWD',
     imagePlaceholder: '/images/cars/aero-roadster.jpg',
-    badge: 'CONCEPT PROTOTYPE',
-    description: 'A wind-sculpted open roadster delivering visceral acceleration, removable glass canopy, and acoustic air-channeling technology.',
-    features: ['Electromorphic Glass Canopy', 'Ultra-Rigid Carbon Tub', 'Laser Matrix Headlights', 'Bespoke Chrono Gauge']
+    badge: 'ICON',
+    description: 'The pinnacle of Japanese supercar engineering featuring a handcrafted VR38DETT twin-turbo V6 engine, advanced ATTESA E-TS all-wheel drive, and precise track-tested launch control.',
+    features: ['Takumi Handbuilt VR38DETT Twin-Turbo V6', 'ATTESA E-TS All-Wheel Drive System', 'Brembo Monoblock Braking System', 'Bilstein DampTronic Adaptive Suspension']
   }
 ];
 
@@ -89,7 +89,7 @@ export default function CarsSection() {
   const [selectedCar, setSelectedCar] = useState<CarModel | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>('All');
 
-  const categories = ['All', 'Hyper GT', 'Hypercar', 'Luxury Saloon', 'Roadster'];
+  const categories = ['All', 'Hypercar', 'Luxury Saloon'];
 
   const filteredCars = activeCategory === 'All'
     ? CARS_FLEET
@@ -191,8 +191,8 @@ export default function CarsSection() {
                   <span className="text-sm font-bold font-mono text-slate-900 dark:text-white">{car.acceleration}</span>
                 </div>
                 <div className="p-2 rounded bg-white/50 dark:bg-black/20">
-                  <span className="block text-[10px] font-mono text-slate-400 uppercase">RANGE</span>
-                  <span className="text-sm font-bold font-mono text-slate-900 dark:text-white">{car.range}</span>
+                  <span className="block text-[10px] font-mono text-slate-400 uppercase">DRIVETRAIN</span>
+                  <span className="text-sm font-bold font-mono text-slate-900 dark:text-white truncate block">{car.drivetrain}</span>
                 </div>
               </div>
 
@@ -261,8 +261,8 @@ export default function CarsSection() {
               </div>
               <div className="p-4 rounded-lg bg-slate-50 dark:bg-white/5 border border-black/5 dark:border-white/5 text-center">
                 <Shield className="w-5 h-5 text-[#223023] dark:text-[#88b08a] mx-auto mb-1" />
-                <span className="block text-[10px] font-mono text-slate-400">RANGE</span>
-                <span className="text-base font-mono font-bold">{selectedCar.range}</span>
+                <span className="block text-[10px] font-mono text-slate-400">DRIVETRAIN</span>
+                <span className="text-xs font-mono font-bold">{selectedCar.drivetrain}</span>
               </div>
             </div>
 
