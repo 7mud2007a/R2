@@ -1,4 +1,8 @@
 import { useState } from 'react';
+import mercedesS63 from '../assets/cars/Mercedes-benz_amg_s63.jpg';
+import bmwM4CSL from '../assets/cars/bmw_m4_csl.jpg';
+import supraMK4 from '../assets/cars/Toyota_supra_mk4.jpg';
+import nissanGTR from '../assets/cars/nissan_gt-r_r35.jpg';
 import { ArrowUpRight, Gauge, Zap, Shield, ChevronRight, X, SlidersHorizontal } from 'lucide-react';
 
 export interface CarModel {
@@ -30,7 +34,7 @@ const CARS_FLEET: CarModel[] = [
     topSpeed: '265 MPH',
     range: '520 Miles',
     drivetrain: 'Quad-Motor All-Wheel Drive',
-    imagePlaceholder: '/images/cars/v12-hyper-gt.jpg',
+    imagePlaceholder: mercedesS63,
     badge: 'FLAGSHIP',
     description: 'Combining quad quantum electric motors with a lightweight carbon-fiber monocoque chassis, the V12 Hyper GT offers unmatched track agility and grand touring tranquility.',
     features: ['Active Aero Wing', 'Acoustic Glass System', 'Quantum Torque Vectoring', 'Bespoke Saddle Leather']
@@ -46,7 +50,7 @@ const CARS_FLEET: CarModel[] = [
     topSpeed: '280 MPH',
     range: '410 Miles',
     drivetrain: 'Carbon-Vectoring Quad Drive',
-    imagePlaceholder: '/images/cars/apex-gtr.jpg',
+    imagePlaceholder: bmwM4CSL,
     badge: 'LIMITED (1 OF 25)',
     description: 'Designed exclusively for motorsport enthusiasts seeking extreme cornering g-forces, active ground effect venturis, and raw electric power delivery.',
     features: ['Magnesium Monoblock Wheels', 'Titanium Roll Cage', 'Downforce Generator', 'Race HUD Telemetry']
@@ -62,7 +66,7 @@ const CARS_FLEET: CarModel[] = [
     topSpeed: '210 MPH',
     range: '620 Miles',
     drivetrain: 'Dual-Motor Rear-Biased AWD',
-    imagePlaceholder: '/images/cars/phantom-s.jpg',
+    imagePlaceholder: supraMK4,
     badge: 'EXECUTIONS',
     description: 'An oasis of silent luxury featuring air-suspension levitation technology, executive rear reclining suites, and autonomous highway cruising capabilities.',
     features: ['Active Noise Cancellation', 'Executive Seating', 'Zero-Gravity Suspension', 'Silk & Carbon Interior']
@@ -78,7 +82,7 @@ const CARS_FLEET: CarModel[] = [
     topSpeed: '245 MPH',
     range: '480 Miles',
     drivetrain: 'Tri-Motor AWD',
-    imagePlaceholder: '/images/cars/aero-roadster.jpg',
+    imagePlaceholder: nissanGTR,
     badge: 'CONCEPT PROTOTYPE',
     description: 'A wind-sculpted open roadster delivering visceral acceleration, removable glass canopy, and acoustic air-channeling technology.',
     features: ['Electromorphic Glass Canopy', 'Ultra-Rigid Carbon Tub', 'Laser Matrix Headlights', 'Bespoke Chrono Gauge']
@@ -146,29 +150,14 @@ export default function CarsSection() {
                 {car.price}
               </span>
             </div>
-
-            {/* Car Image Placeholder Container */}
-            <div className="relative w-full aspect-[16/9] px-6 my-2 flex items-center justify-center overflow-hidden">
-              {/* Dynamic Luxury Car Render Vector Graphic */}
-              <div className="w-full h-full relative flex items-center justify-center bg-gradient-to-b from-transparent via-[#223023]/10 to-transparent rounded-xl group-hover:scale-105 transition-transform duration-700 ease-out">
-                <svg className="w-full h-44 text-[#223023] dark:text-[#425d43] opacity-85" viewBox="0 0 600 220" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  {/* Streamlined Body */}
-                  <path d="M 50 160 C 90 160, 140 150, 180 110 C 220 70, 340 50, 440 65 C 500 75, 540 110, 570 160 Z" stroke="currentColor" strokeWidth="2.5" fill="currentColor" fillOpacity="0.08" />
-                  <path d="M 120 110 L 220 65 L 380 65 L 450 110 Z" stroke="currentColor" strokeWidth="2" strokeDasharray="6 3" />
-                  {/* Wheels */}
-                  <circle cx="150" cy="160" r="32" stroke="currentColor" strokeWidth="3" fill="#070b08" />
-                  <circle cx="150" cy="160" r="18" stroke="#d4af37" strokeWidth="2" />
-                  <circle cx="470" cy="160" r="32" stroke="currentColor" strokeWidth="3" fill="#070b08" />
-                  <circle cx="470" cy="160" r="18" stroke="#d4af37" strokeWidth="2" />
-                  <line x1="20" y1="192" x2="580" y2="192" stroke="currentColor" strokeWidth="1" strokeDasharray="4 4" opacity="0.4" />
-                </svg>
-                {/* Overlay Text indicating image placeholder */}
-                <div className="absolute bottom-2 right-4 text-[10px] font-mono text-slate-400 dark:text-slate-500 uppercase tracking-widest bg-black/40 px-2 py-0.5 rounded">
-                  Image Placeholder Ready
-                </div>
-              </div>
-            </div>
-
+            {/* Car Image */}
+<div className="relative w-full aspect-[16/9] px-6 my-2 flex items-center justify-center overflow-hidden">
+  <img
+    src={car.imagePlaceholder}
+    alt={car.name}
+    className="w-full h-full object-cover rounded-xl group-hover:scale-105 transition-transform duration-700 ease-out"
+  />
+</div>
             {/* Car Name & Tagline */}
             <div className="p-6 md:p-8 pt-2 space-y-4">
               <div>
