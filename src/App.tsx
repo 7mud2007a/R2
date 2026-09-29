@@ -2,6 +2,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import AnimatedNavbar from './components/Navbar';
 import HeroSection from './components/HeroSection';
 import CinematicExperience from './components/CinematicExperience';
+import ScrollVideo from './components/ScrollVideo';
 import CarsSection from './components/CarsSection';
 import TechSection from './components/TechSection';
 import AboutSection from './components/AboutSection';
@@ -25,7 +26,7 @@ export default function App() {
         <main>
           {/* Hero Section */}
           <HeroSection onExploreClick={() => handleNavigate('cinematic-experience')} />
-
+<ScrollVideo />
           {/* Scroll Cinematic Car Experience Section */}
           <CinematicExperience />
 
