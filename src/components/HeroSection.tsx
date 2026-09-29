@@ -37,65 +37,7 @@ export default function HeroSection({ onExploreClick }: HeroSectionProps) {
             Redefining hyper-performance engineering with timeless luxury, aerodynamic precision, and zero-compromise acoustic harmony.
           </p>
         </div>
-
-        {/* Hero Media Placeholder Component */}
-        <div className="mt-10 relative w-full aspect-[21/9] min-h-[300px] md:min-h-[420px] rounded-2xl overflow-hidden border border-black/10 dark:border-white/10 shadow-2xl bg-gradient-to-br from-slate-100 via-slate-200 to-slate-300 dark:from-[#0e1610] dark:via-[#141f17] dark:to-[#090d09] group">
-
-          {/* Futuristic Graphic Silhouettes / Abstract Vector Car Blueprint */}
-          <div className="absolute inset-0 flex items-center justify-center p-8 opacity-90 group-hover:scale-[1.02] transition-transform duration-700 ease-out">
-            <svg className="w-full h-full max-w-4xl text-[#223023] dark:text-[#3d563e] opacity-80" viewBox="0 0 1000 400" fill="none" xmlns="http://www.w3.org/2000/svg">
-              {/* Abstract Car Silhouette Lines */}
-              <path d="M50 280 C 120 280, 200 270, 260 210 C 320 150, 480 120, 680 140 C 780 150, 880 200, 950 280" stroke="currentColor" strokeWidth="2" strokeDasharray="8 4" />
-              <path d="M120 280 L 180 280 C 210 240, 250 180, 340 160 L 640 160 C 720 160, 780 220, 830 280 L 900 280" stroke="currentColor" strokeWidth="3" />
-              {/* Wheel Arches */}
-              <circle cx="250" cy="280" r="45" stroke="currentColor" strokeWidth="3" fill="none" />
-              <circle cx="250" cy="280" r="28" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 2" />
-              <circle cx="750" cy="280" r="45" stroke="currentColor" strokeWidth="3" fill="none" />
-              <circle cx="750" cy="280" r="28" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 2" />
-              {/* Ground Line */}
-              <line x1="20" y1="325" x2="980" y2="325" stroke="currentColor" strokeWidth="1.5" opacity="0.5" />
-              {/* Dynamic Accent Rays */}
-              <line x1="340" y1="160" x2="480" y2="80" stroke="currentColor" strokeWidth="1" opacity="0.3" />
-              <line x1="640" y1="160" x2="720" y2="80" stroke="currentColor" strokeWidth="1" opacity="0.3" />
-            </svg>
-          </div>
-
-          {/* Media Overlay Info Banner */}
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent flex flex-col justify-end p-6 md:p-10">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <span className="text-xs font-mono text-emerald-400 uppercase tracking-widest block mb-1">
-                  [ HERO MEDIA PLACEHOLDER ]
-                </span>
-                <h3 className="text-xl md:text-2xl font-cinzel text-white font-bold tracking-wider">
-                  VELTRION V12 HYPER GT
-                </h3>
-              </div>
-              <div className="flex items-center space-x-6 text-white/80 text-xs font-mono">
-                <div>
-                  <span className="block text-slate-400">POWER</span>
-                  <span className="text-sm font-bold text-white">1,450 HP</span>
-                </div>
-                <div className="h-8 w-px bg-white/20" />
-                <div>
-                  <span className="block text-slate-400">0-60 MPH</span>
-                  <span className="text-sm font-bold text-white">1.85s</span>
-                </div>
-                <div className="h-8 w-px bg-white/20" />
-                <div>
-                  <span className="block text-slate-400">TOP SPEED</span>
-                  <span className="text-sm font-bold text-white">265 MPH</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Dark Green Brand Badge */}
-          <div className="absolute top-6 right-6 bg-[#223023]/90 text-white px-4 py-1.5 rounded-full text-xs font-mono tracking-widest border border-white/20 backdrop-blur-md">
-            CONCEPT 2025
-          </div>
-        </div>
-
+        
         {/* Action Buttons & Specs Summary */}
         <div className="mt-10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-6">
           <div className="flex flex-wrap items-center gap-4">
