@@ -5,13 +5,31 @@ export default function Footer() {
   const [subscribed, setSubscribed] = useState(false);
   const [email, setEmail] = useState('');
 
-  const handleSubscribe = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (email) {
+const handleSubscribe = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  if (!email) return;
+
+  try {
+    const response = await fetch('https://formspree.io/f/mljdvpbe', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({
+        email,
+      }),
+    });
+
+    if (response.ok) {
       setSubscribed(true);
       setEmail('');
     }
-  };
+  } catch (error) {
+    console.error('Form submission failed:', error);
+  }
+};
 
   return (
     <footer id="contact" className="relative w-full bg-[#040604] text-white pt-20 pb-12 px-6 md:px-16 border-t border-[#223023]/60 transition-colors duration-300">
