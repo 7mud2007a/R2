@@ -109,7 +109,7 @@ export default function ScrollVideo() {
     };
 
     // Preload first frames
-    for (let i = 0; i < 30; i++) {
+for (let i = 0; i < 12; i++) {
       loadFrame(i);
     }
 
