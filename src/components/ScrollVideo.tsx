@@ -149,8 +149,8 @@ export default function ScrollVideo() {
       // Smooth inertia
       const difference = target - current;
 
-      currentProgressRef.current =
-        current + difference * 0.075;
+currentProgressRef.current =
+  current + difference * 0.045;
 
       const progress =
         currentProgressRef.current;
