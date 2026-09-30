@@ -1,9 +1,26 @@
 import { useState } from 'react';
-import { ExternalLink, ArrowRight, Check, Mail, Phone, MapPin } from 'lucide-react';
+import {
+  ExternalLink,
+  ArrowRight,
+  Check,
+  Mail,
+  Phone,
+  MapPin,
+  ChevronDown,
+} from 'lucide-react';
 
 export default function Footer() {
   const [subscribed, setSubscribed] = useState(false);
   const [email, setEmail] = useState('');
+  const [selectedCar, setSelectedCar] = useState('');
+  const [carOpen, setCarOpen] = useState(false);
+
+  const cars = [
+    'Mercedes-AMG S 63 E PERFORMANCE',
+    'BMW M4 CSL',
+    'Toyota Supra MK4 Turbo',
+    'Nissan GT-R R35',
+  ];
 
   const handleSubscribe = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -24,6 +41,8 @@ export default function Footer() {
         setSubscribed(true);
         form.reset();
         setEmail('');
+        setSelectedCar('');
+        setCarOpen(false);
       }
     } catch (error) {
       console.error('Form submission failed:', error);
@@ -38,9 +57,7 @@ export default function Footer() {
       <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-[#223023]/20 rounded-full blur-[140px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto">
-
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 pb-16 border-b border-white/10 items-start">
-
           <div className="lg:col-span-5 space-y-4">
             <h2 className="font-cinzel text-2xl md:text-3xl font-bold tracking-[0.25em] text-white">
               VELTRION <span className="text-[#88b08a]">MOTORS</span>
@@ -51,7 +68,6 @@ export default function Footer() {
             </p>
 
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 text-xs text-slate-400 font-mono pt-2">
-
               <div className="flex items-center space-x-2">
                 <MapPin className="w-3.5 h-3.5 text-[#88b08a]" />
                 <span>Geneva, Switzerland</span>
@@ -66,12 +82,10 @@ export default function Footer() {
                   bznsman77@gmail.com
                 </a>
               </div>
-
             </div>
           </div>
 
           <div className="lg:col-span-7 bg-[#0e1610] p-6 md:p-8 rounded-2xl border border-white/10 shadow-xl space-y-4">
-
             <span className="text-[10px] font-mono tracking-widest text-[#88b08a] uppercase block">
               [ PRIVATE CONCIERGE ALLOCATION ]
             </span>
@@ -83,6 +97,7 @@ export default function Footer() {
             {subscribed ? (
               <div className="p-4 rounded-xl bg-[#223023] border border-emerald-500/30 text-emerald-300 text-xs font-mono flex items-center space-x-3">
                 <Check className="w-4 h-4 text-emerald-400" />
+
                 <span>
                   Your request has been received. Our Geneva Atelier will contact you shortly.
                 </span>
@@ -92,7 +107,6 @@ export default function Footer() {
                 onSubmit={handleSubscribe}
                 className="flex flex-col gap-3"
               >
-
                 <input
                   type="text"
                   name="name"
@@ -111,32 +125,61 @@ export default function Footer() {
                   className="w-full px-4 py-3 rounded-lg bg-black/40 border border-white/10 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#223023] transition-colors"
                 />
 
-                <select
+                {/* Hidden field used by Formspree */}
+                <input
+                  type="hidden"
                   name="car"
-                  required
-                  defaultValue=""
-                  className="w-full px-4 py-3 rounded-lg bg-black/40 border border-white/10 text-xs text-white focus:outline-none focus:border-[#223023] transition-colors"
-                >
-                  <option value="" disabled>
-                    Select a vehicle
-                  </option>
+                  value={selectedCar}
+                />
 
-                  <option value="Mercedes-AMG S 63 E PERFORMANCE">
-                    Mercedes-AMG S 63 E PERFORMANCE
-                  </option>
+                {/* Custom Vehicle Dropdown */}
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setCarOpen((open) => !open)}
+                    className="w-full px-4 py-3 rounded-lg bg-black/40 border border-white/10 text-xs text-left text-white focus:outline-none focus:border-[#223023] transition-all flex items-center justify-between"
+                    aria-haspopup="listbox"
+                    aria-expanded={carOpen}
+                  >
+                    <span
+                      className={
+                        selectedCar ? 'text-white' : 'text-slate-500'
+                      }
+                    >
+                      {selectedCar || 'Select a vehicle'}
+                    </span>
 
-                  <option value="BMW M4 CSL">
-                    BMW M4 CSL
-                  </option>
+                    <ChevronDown
+                      className={`w-4 h-4 text-[#88b08a] transition-transform duration-300 ${
+                        carOpen ? 'rotate-180' : ''
+                      }`}
+                    />
+                  </button>
 
-                  <option value="Toyota Supra MK4 Turbo">
-                    Toyota Supra MK4 Turbo
-                  </option>
-
-                  <option value="Nissan GT-R R35">
-                    Nissan GT-R R35
-                  </option>
-                </select>
+                  {carOpen && (
+                    <div className="absolute left-0 right-0 bottom-full mb-2 z-50 overflow-hidden rounded-lg border border-white/10 bg-[#0b100c] shadow-2xl shadow-black/50 backdrop-blur-xl">
+                      <div className="p-1.5">
+                        {cars.map((car) => (
+                          <button
+                            key={car}
+                            type="button"
+                            onClick={() => {
+                              setSelectedCar(car);
+                              setCarOpen(false);
+                            }}
+                            className={`w-full px-3 py-3 rounded-md text-left text-xs transition-all duration-200 ${
+                              selectedCar === car
+                                ? 'bg-[#223023] text-white'
+                                : 'text-slate-300 hover:bg-white/5 hover:text-white'
+                            }`}
+                          >
+                            {car}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 <textarea
                   name="message"
@@ -148,20 +191,18 @@ export default function Footer() {
 
                 <button
                   type="submit"
-                  className="px-6 py-3 bg-[#223023] hover:bg-[#2c3e2e] text-white font-mono text-xs uppercase tracking-widest rounded-lg transition-all flex items-center justify-center space-x-2 whitespace-nowrap shadow-md"
+                  disabled={!selectedCar}
+                  className="px-6 py-3 bg-[#223023] hover:bg-[#2c3e2e] disabled:opacity-40 disabled:cursor-not-allowed text-white font-mono text-xs uppercase tracking-widest rounded-lg transition-all flex items-center justify-center space-x-2 whitespace-nowrap shadow-md"
                 >
                   <span>Submit Inquiry</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
-
               </form>
             )}
-
           </div>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 py-12 text-xs font-mono border-b border-white/10">
-
           <div>
             <h4 className="text-slate-400 uppercase tracking-widest mb-4">
               FLEET MODELS
@@ -278,17 +319,14 @@ export default function Footer() {
               </li>
             </ul>
           </div>
-
         </div>
 
         <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-mono text-slate-500">
-
           <div>
             &copy; {new Date().getFullYear()} Veltrion Motors AG. All Rights Reserved.
           </div>
 
           <div className="flex items-center space-x-2 group">
-
             <span className="text-slate-400 font-light">
               Crafted by
             </span>
@@ -303,11 +341,8 @@ export default function Footer() {
 
               <ExternalLink className="w-3 h-3 text-emerald-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </a>
-
           </div>
-
         </div>
-
       </div>
     </footer>
   );
