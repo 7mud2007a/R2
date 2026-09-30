@@ -235,7 +235,7 @@ currentProgressRef.current =
   return (
     <section
       data-scroll-section
-      className="relative h-[700vh] w-full bg-black"
+      className="relative h-[1200vh] w-full bg-black"
     >
       <div
         className={`fixed inset-0 z-30 h-screen w-full overflow-hidden bg-black transition-opacity duration-300 ${

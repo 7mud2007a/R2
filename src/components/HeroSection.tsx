@@ -21,11 +21,6 @@ export default function HeroSection({ onExploreClick }: HeroSectionProps) {
       {/* Main Content Container */}
       <div className="relative z-10 max-w-7xl mx-auto w-full flex-1 flex flex-col justify-center my-auto">
 
-        {/* Top Tagline Badge */}
-        <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-[#223023]/10 dark:bg-[#223023]/40 border border-[#223023]/30 text-[#223023] dark:text-[#88b08a] text-xs uppercase tracking-[0.25em] font-semibold mb-8 w-fit backdrop-blur-md animate-fade-in">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>The Pinnacle of Hyper-Electric Luxury</span>
-        </div>
 
         {/* Hero Title */}
         <div className="space-y-4 max-w-5xl">
