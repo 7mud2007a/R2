@@ -32,8 +32,15 @@ const TEXTS = [
 export default function ScrollVideo() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imagesRef = useRef<HTMLImageElement[]>([]);
+
   const currentFrameRef = useRef(-1);
   const rafRef = useRef<number | null>(null);
+
+  // Target = where the finger/scroll wants to go
+  const targetProgressRef = useRef(0);
+
+  // Current = where the animation currently is
+  const currentProgressRef = useRef(0);
 
   const [activeText, setActiveText] = useState(-1);
   const [visible, setVisible] = useState(false);
@@ -53,8 +60,13 @@ export default function ScrollVideo() {
     const drawFrame = (index: number) => {
       const image = images[index];
 
-      if (!image || !image.complete || image.naturalWidth === 0) return;
-      if (currentFrameRef.current === index) return;
+      if (!image || !image.complete || image.naturalWidth === 0) {
+        return;
+      }
+
+      if (currentFrameRef.current === index) {
+        return;
+      }
 
       currentFrameRef.current = index;
 
@@ -66,13 +78,22 @@ export default function ScrollVideo() {
     };
 
     const loadFrame = (index: number) => {
-      if (index < 0 || index >= FRAME_COUNT || images[index]) return;
+      if (
+        index < 0 ||
+        index >= FRAME_COUNT ||
+        images[index]
+      ) {
+        return;
+      }
 
       const image = new Image();
       image.src = framePath(index);
 
       image.onload = () => {
-        if (index === 0 && currentFrameRef.current === -1) {
+        if (
+          index === 0 &&
+          currentFrameRef.current === -1
+        ) {
           drawFrame(0);
         }
       };
@@ -85,7 +106,7 @@ export default function ScrollVideo() {
       loadFrame(i);
     }
 
-    const update = () => {
+    const updateTarget = () => {
       const section = document.querySelector(
         '[data-scroll-section]'
       ) as HTMLElement | null;
@@ -99,16 +120,14 @@ export default function ScrollVideo() {
 
       if (scrollDistance <= 0) return;
 
-      // Section starts
       const sectionStarted = rect.top <= 0;
+      const sectionActive =
+        rect.bottom > window.innerHeight;
 
-      // Section still active
-      const sectionActive = rect.bottom > window.innerHeight;
+      setVisible(
+        sectionStarted && sectionActive
+      );
 
-      // Keep the visual fixed only while inside this section
-      setVisible(sectionStarted && sectionActive);
-
-      // Calculate progress through the section
       const progress = Math.max(
         0,
         Math.min(
@@ -117,9 +136,33 @@ export default function ScrollVideo() {
         )
       );
 
+      targetProgressRef.current = progress;
+    };
+
+    const animate = () => {
+      const target =
+        targetProgressRef.current;
+
+      const current =
+        currentProgressRef.current;
+
+      // Smooth inertia
+      const difference = target - current;
+
+      currentProgressRef.current =
+        current + difference * 0.075;
+
+      const progress =
+        currentProgressRef.current;
+
       const frameIndex = Math.min(
         FRAME_COUNT - 1,
-        Math.floor(progress * (FRAME_COUNT - 1))
+        Math.max(
+          0,
+          Math.floor(
+            progress * (FRAME_COUNT - 1)
+          )
+        )
       );
 
       // Load frames around current position
@@ -145,18 +188,19 @@ export default function ScrollVideo() {
       });
 
       setActiveText(textIndex);
+
+      rafRef.current =
+        requestAnimationFrame(animate);
     };
 
     const onScroll = () => {
-      if (rafRef.current !== null) return;
-
-      rafRef.current = requestAnimationFrame(() => {
-        update();
-        rafRef.current = null;
-      });
+      updateTarget();
     };
 
-    update();
+    updateTarget();
+
+    rafRef.current =
+      requestAnimationFrame(animate);
 
     window.addEventListener(
       'scroll',
@@ -181,7 +225,9 @@ export default function ScrollVideo() {
       );
 
       if (rafRef.current !== null) {
-        cancelAnimationFrame(rafRef.current);
+        cancelAnimationFrame(
+          rafRef.current
+        );
       }
     };
   }, []);
@@ -216,11 +262,19 @@ export default function ScrollVideo() {
           {TEXTS.map((text, index) => (
             <div
               key={text.title}
-              className={`absolute bottom-16 left-6 max-w-md transition-all duration-700 md:left-16 ${
+              className={`absolute bottom-16 left-6 max-w-md md:left-16 ${
                 activeText === index
-                  ? 'translate-y-0 opacity-100'
-                  : 'translate-y-4 opacity-0'
+                  ? 'opacity-100'
+                  : 'pointer-events-none opacity-0'
               }`}
+              style={{
+                transform:
+                  activeText === index
+                    ? 'translateY(-45px)'
+                    : 'translateY(35px)',
+                transition:
+                  'transform 900ms cubic-bezier(0.16, 1, 0.3, 1), opacity 700ms ease',
+              }}
             >
               <div className="mb-3 h-px w-12 bg-white/60" />
 
@@ -237,6 +291,7 @@ export default function ScrollVideo() {
               </p>
             </div>
           ))}
+
         </div>
       </div>
     </section>
