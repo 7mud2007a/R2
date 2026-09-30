@@ -207,6 +207,7 @@ export default function AnimatedNavbar({ onNavigate }: NavbarProps) {
     <header
       className="fixed top-0 left-0 right-0 w-full max-w-full z-50 pointer-events-none box-border"
       ref={containerRef}
+      dir="ltr"
     >
       <style
         dangerouslySetInnerHTML={{
@@ -371,7 +372,10 @@ export default function AnimatedNavbar({ onNavigate }: NavbarProps) {
       />
 
       <div className="anim-nav-container relative w-full max-w-full h-full box-border">
-        <div className="fixed top-0 left-0 right-0 h-16 sm:h-20 md:h-24 px-3 sm:px-6 md:px-14 flex items-center justify-between z-40 pointer-events-auto backdrop-blur-md bg-white/30 dark:bg-[#070b08]/30 border-b border-black/5 dark:border-white/5 transition-colors duration-300 w-full max-w-full box-border">
+        <div
+          className="fixed top-0 left-0 right-0 h-16 sm:h-20 md:h-24 px-3 sm:px-6 md:px-14 flex items-center justify-between z-40 pointer-events-auto backdrop-blur-md bg-white/30 dark:bg-[#070b08]/30 border-b border-black/5 dark:border-white/5 transition-colors duration-300 w-full max-w-full box-border"
+          dir="ltr"
+        >
           <div className="w-12 sm:w-16 md:w-20 flex-shrink-0"></div>
 
           <div
@@ -391,10 +395,19 @@ export default function AnimatedNavbar({ onNavigate }: NavbarProps) {
               <button
                 onClick={toggleLanguage}
                 className="group flex items-center gap-1.5 px-2 py-1.5 sm:px-2.5 sm:py-2 rounded-full bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 text-slate-900 dark:text-white transition-all duration-300 border border-black/10 dark:border-white/10"
-                title={language === 'EN' ? labels.switchToArabic : labels.switchToEnglish}
-                aria-label={labels.switchToArabic}
+                title={
+                  language === 'EN'
+                    ? labels.switchToArabic
+                    : labels.switchToEnglish
+                }
+                aria-label={
+                  language === 'EN'
+                    ? labels.switchToArabic
+                    : labels.switchToEnglish
+                }
               >
                 <Languages className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+
                 <span className="text-[9px] sm:text-[10px] font-bold tracking-widest">
                   {language}
                 </span>
@@ -441,7 +454,7 @@ export default function AnimatedNavbar({ onNavigate }: NavbarProps) {
           </div>
         </button>
 
-        <nav>
+        <nav dir={isArabic ? 'rtl' : 'ltr'}>
           <ul>
             <li onClick={() => handleNavClick('hero')}>
               <span>{labels.home}</span>
@@ -467,4 +480,4 @@ export default function AnimatedNavbar({ onNavigate }: NavbarProps) {
       </div>
     </header>
   );
-}
+        }
