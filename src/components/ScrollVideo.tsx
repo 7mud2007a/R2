@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
-const FRAME_COUNT = 200;
+const MOBILE_FRAME_COUNT = 300;
+const DESKTOP_FRAME_COUNT = 200;
 const DESKTOP_BREAKPOINT = 768;
 
 const TEXTS = [
@@ -86,7 +87,7 @@ export default function ScrollVideo() {
     const loadFrame = (index: number) => {
       if (
         index < 0 ||
-        index >= FRAME_COUNT ||
+        index >= (window.innerWidth >= DESKTOP_BREAKPOINT ? DESKTOP_FRAME_COUNT : MOBILE_FRAME_COUNT) ||
         images[index]
       ) {
         return;
@@ -165,11 +166,11 @@ for (let i = 0; i < 12; i++) {
         currentProgressRef.current;
 
       const frameIndex = Math.min(
-        FRAME_COUNT - 1,
+(window.innerWidth >= DESKTOP_BREAKPOINT ? DESKTOP_FRAME_COUNT : MOBILE_FRAME_COUNT) - 1,
         Math.max(
           0,
           Math.floor(
-            progress * (FRAME_COUNT - 1)
+progress * ((window.innerWidth >= DESKTOP_BREAKPOINT ? DESKTOP_FRAME_COUNT : MOBILE_FRAME_COUNT) - 1)
           )
         )
       );
