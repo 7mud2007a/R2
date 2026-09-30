@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 const FRAME_COUNT = 300;
+const DESKTOP_BREAKPOINT = 768;
 
 const TEXTS = [
   {
@@ -32,14 +33,12 @@ const TEXTS = [
 export default function ScrollVideo() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imagesRef = useRef<HTMLImageElement[]>([]);
+  const frameFolderRef = useRef('/scroll-frames/');
 
   const currentFrameRef = useRef(-1);
   const rafRef = useRef<number | null>(null);
 
-  // Target = where the finger/scroll wants to go
   const targetProgressRef = useRef(0);
-
-  // Current = where the animation currently is
   const currentProgressRef = useRef(0);
 
   const [activeText, setActiveText] = useState(-1);
@@ -52,10 +51,17 @@ export default function ScrollVideo() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    const isDesktop =
+      window.innerWidth >= DESKTOP_BREAKPOINT;
+
+    frameFolderRef.current = isDesktop
+      ? '/scroll-frames-desktop/'
+      : '/scroll-frames/';
+
     const images = imagesRef.current;
 
     const framePath = (index: number) =>
-      `/scroll-frames/frame_${String(index + 1).padStart(4, '0')}.webp`;
+      `${frameFolderRef.current}frame_${String(index + 1).padStart(4, '0')}.webp`;
 
     const drawFrame = (index: number) => {
       const image = images[index];
@@ -87,6 +93,7 @@ export default function ScrollVideo() {
       }
 
       const image = new Image();
+
       image.src = framePath(index);
 
       image.onload = () => {
@@ -121,6 +128,7 @@ export default function ScrollVideo() {
       if (scrollDistance <= 0) return;
 
       const sectionStarted = rect.top <= 0;
+
       const sectionActive =
         rect.bottom > window.innerHeight;
 
@@ -147,10 +155,11 @@ export default function ScrollVideo() {
         currentProgressRef.current;
 
       // Smooth inertia
-      const difference = target - current;
+      const difference =
+        target - current;
 
-currentProgressRef.current =
-  current + difference * 0.045;
+      currentProgressRef.current =
+        current + difference * 0.045;
 
       const progress =
         currentProgressRef.current;
@@ -197,6 +206,33 @@ currentProgressRef.current =
       updateTarget();
     };
 
+    const onResize = () => {
+      const newIsDesktop =
+        window.innerWidth >= DESKTOP_BREAKPOINT;
+
+      const newFolder = newIsDesktop
+        ? '/scroll-frames-desktop/'
+        : '/scroll-frames/';
+
+      // If switching between mobile and desktop,
+      // reload frames from the correct folder.
+      if (
+        frameFolderRef.current !== newFolder
+      ) {
+        frameFolderRef.current = newFolder;
+
+        imagesRef.current = [];
+
+        currentFrameRef.current = -1;
+
+        for (let i = 0; i < 30; i++) {
+          loadFrame(i);
+        }
+      }
+
+      updateTarget();
+    };
+
     updateTarget();
 
     rafRef.current =
@@ -210,7 +246,7 @@ currentProgressRef.current =
 
     window.addEventListener(
       'resize',
-      onScroll
+      onResize
     );
 
     return () => {
@@ -221,7 +257,7 @@ currentProgressRef.current =
 
       window.removeEventListener(
         'resize',
-        onScroll
+        onResize
       );
 
       if (rafRef.current !== null) {
