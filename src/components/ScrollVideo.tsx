@@ -109,10 +109,28 @@ export default function ScrollVideo() {
       images[index] = image;
     };
 
-    // Preload first frames
-for (let i = 0; i < 12; i++) {
-      loadFrame(i);
-    }
+        // Preload all frames progressively
+    const preloadCount =
+      isDesktop ? DESKTOP_FRAME_COUNT : MOBILE_FRAME_COUNT;
+
+    let preloadIndex = 0;
+
+    const preloadBatch = () => {
+      const batchEnd = Math.min(
+        preloadIndex + 10,
+        preloadCount
+      );
+
+      for (; preloadIndex < batchEnd; preloadIndex++) {
+        loadFrame(preloadIndex);
+      }
+
+      if (preloadIndex < preloadCount) {
+        requestIdleCallback(preloadBatch);
+      }
+    };
+
+    preloadBatch();
 
     const updateTarget = () => {
       const section = document.querySelector(
