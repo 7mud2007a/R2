@@ -33,7 +33,7 @@ export default function ScrollVideo() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imagesRef = useRef<HTMLImageElement[]>([]);
   const currentFrameRef = useRef(-1);
-  const animationFrameRef = useRef<number | null>(null);
+  const rafRef = useRef<number | null>(null);
   const [activeText, setActiveText] = useState(-1);
 
   useEffect(() => {
@@ -43,17 +43,16 @@ export default function ScrollVideo() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const images: HTMLImageElement[] = [];
-    imagesRef.current = images;
+    const images = imagesRef.current;
 
-    const getFramePath = (index: number) =>
+    const framePath = (index: number) =>
       `/scroll-frames/frame_${String(index + 1).padStart(4, '0')}.webp`;
 
     const drawFrame = (index: number) => {
       const image = images[index];
 
       if (!image || !image.complete || image.naturalWidth === 0) return;
-      if (index === currentFrameRef.current) return;
+      if (currentFrameRef.current === index) return;
 
       currentFrameRef.current = index;
 
@@ -65,44 +64,36 @@ export default function ScrollVideo() {
     };
 
     const loadFrame = (index: number) => {
-      if (index < 0 || index >= FRAME_COUNT) return;
+      if (index < 0 || index >= FRAME_COUNT || images[index]) return;
 
-      if (!images[index]) {
-        const image = new Image();
-        image.src = getFramePath(index);
+      const image = new Image();
+      image.src = framePath(index);
 
-        image.onload = () => {
-          if (index === 0) {
-            drawFrame(0);
-          }
+      image.onload = () => {
+        if (index === 0 && currentFrameRef.current === -1) {
+          drawFrame(0);
+        }
+      };
 
-          const targetFrame = currentFrameRef.current;
-          if (targetFrame === index) {
-            drawFrame(index);
-          }
-        };
-
-        images[index] = image;
-      }
+      images[index] = image;
     };
 
-    // Load the first frames immediately.
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 30; i++) {
       loadFrame(i);
     }
 
-    const updateScroll = () => {
-      const section = canvas.parentElement?.parentElement;
+    const update = () => {
+      const section = canvas.closest('[data-scroll-section]');
       if (!section) return;
 
       const rect = section.getBoundingClientRect();
-      const scrollableDistance = section.offsetHeight - window.innerHeight;
+      const distance = section.clientHeight - window.innerHeight;
 
-      if (scrollableDistance <= 0) return;
+      if (distance <= 0) return;
 
-      const progress = Math.min(
-        1,
-        Math.max(0, -rect.top / scrollableDistance)
+      const progress = Math.max(
+        0,
+        Math.min(1, -rect.top / distance)
       );
 
       const frameIndex = Math.min(
@@ -110,51 +101,53 @@ export default function ScrollVideo() {
         Math.floor(progress * (FRAME_COUNT - 1))
       );
 
-      // Load the current frame and a small window around it.
-      for (let i = frameIndex - 3; i <= frameIndex + 8; i++) {
+      for (let i = frameIndex - 4; i <= frameIndex + 10; i++) {
         loadFrame(i);
       }
 
       drawFrame(frameIndex);
 
-      let nextText = -1;
+      let textIndex = -1;
 
       TEXTS.forEach((text, index) => {
         if (progress >= text.start && progress <= text.end) {
-          nextText = index;
+          textIndex = index;
         }
       });
 
-      setActiveText(nextText);
+      setActiveText(textIndex);
     };
 
-    const handleScroll = () => {
-      if (animationFrameRef.current !== null) return;
+    const onScroll = () => {
+      if (rafRef.current !== null) return;
 
-      animationFrameRef.current = window.requestAnimationFrame(() => {
-        updateScroll();
-        animationFrameRef.current = null;
+      rafRef.current = requestAnimationFrame(() => {
+        update();
+        rafRef.current = null;
       });
     };
 
-    updateScroll();
+    update();
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('resize', handleScroll);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
 
     return () => {
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', handleScroll);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
 
-      if (animationFrameRef.current !== null) {
-        window.cancelAnimationFrame(animationFrameRef.current);
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
       }
     };
   }, []);
 
   return (
-    <section className="relative h-[700vh] w-full bg-black">
-      <div className="sticky top-0 h-screen w-full overflow-hidden">
+    <section
+      data-scroll-section
+      className="relative h-[700vh] w-full bg-black"
+    >
+      <div className="sticky top-0 h-screen w-full overflow-hidden bg-black">
         <canvas
           ref={canvasRef}
           className="absolute inset-0 h-full w-full object-contain"
