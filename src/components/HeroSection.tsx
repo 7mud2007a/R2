@@ -1,4 +1,5 @@
 import { ArrowRight, ChevronDown, Compass, ShieldCheck, Zap } from 'lucide-react';
+
 interface HeroSectionProps {
   onExploreClick?: () => void;
 }
