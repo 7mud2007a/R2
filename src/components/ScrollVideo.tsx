@@ -38,6 +38,7 @@ export default function ScrollVideo() {
 
   const currentFrameRef = useRef(-1);
   const rafRef = useRef<number | null>(null);
+  const lastTextIndexRef = useRef(-1);
 
   const targetProgressRef = useRef(0);
   const currentProgressRef = useRef(0);
@@ -49,15 +50,28 @@ export default function ScrollVideo() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', {
+      alpha: false,
+      desynchronized: true,
+    });
+
     if (!ctx) return;
 
-    const isDesktop =
+    const getIsDesktop = () =>
       window.innerWidth >= DESKTOP_BREAKPOINT;
 
-    frameFolderRef.current = isDesktop
-      ? '/scroll-frames-desktop/'
-      : '/scroll-frames/';
+    const getFrameCount = () =>
+      getIsDesktop()
+        ? DESKTOP_FRAME_COUNT
+        : MOBILE_FRAME_COUNT;
+
+    const setFrameFolder = () => {
+      frameFolderRef.current = getIsDesktop()
+        ? '/scroll-frames-desktop/'
+        : '/scroll-frames/';
+    };
+
+    setFrameFolder();
 
     const images = imagesRef.current;
 
@@ -77,17 +91,24 @@ export default function ScrollVideo() {
 
       currentFrameRef.current = index;
 
-      canvas.width = image.naturalWidth;
-      canvas.height = image.naturalHeight;
+      if (
+        canvas.width !== image.naturalWidth ||
+        canvas.height !== image.naturalHeight
+      ) {
+        canvas.width = image.naturalWidth;
+        canvas.height = image.naturalHeight;
+      }
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(image, 0, 0);
     };
 
     const loadFrame = (index: number) => {
+      const frameCount = getFrameCount();
+
       if (
         index < 0 ||
-        index >= (window.innerWidth >= DESKTOP_BREAKPOINT ? DESKTOP_FRAME_COUNT : MOBILE_FRAME_COUNT) ||
+        index >= frameCount ||
         images[index]
       ) {
         return;
@@ -95,6 +116,7 @@ export default function ScrollVideo() {
 
       const image = new Image();
 
+      image.decoding = 'async';
       image.src = framePath(index);
 
       image.onload = () => {
@@ -109,28 +131,21 @@ export default function ScrollVideo() {
       images[index] = image;
     };
 
-        // Preload all frames progressively
-    const preloadCount =
-      isDesktop ? DESKTOP_FRAME_COUNT : MOBILE_FRAME_COUNT;
+    /*
+     * Load ALL frames immediately.
+     *
+     * The old version loaded only 10 frames at a time
+     * using requestIdleCallback(). That caused the scroll
+     * to reach frames that had not started loading yet.
+     *
+     * Starting every request immediately makes the browser
+     * fetch the complete sequence as early as possible.
+     */
+    const preloadCount = getFrameCount();
 
-    let preloadIndex = 0;
-
-    const preloadBatch = () => {
-      const batchEnd = Math.min(
-        preloadIndex + 10,
-        preloadCount
-      );
-
-      for (; preloadIndex < batchEnd; preloadIndex++) {
-        loadFrame(preloadIndex);
-      }
-
-      if (preloadIndex < preloadCount) {
-        requestIdleCallback(preloadBatch);
-      }
-    };
-
-    preloadBatch();
+    for (let i = 0; i < preloadCount; i++) {
+      loadFrame(i);
+    }
 
     const updateTarget = () => {
       const section = document.querySelector(
@@ -173,35 +188,37 @@ export default function ScrollVideo() {
       const current =
         currentProgressRef.current;
 
-      // Smooth inertia
       const difference =
         target - current;
 
+      /*
+       * Faster response to finger/mouse movement.
+       * The old 0.045 value made the animation feel
+       * delayed behind the actual scroll.
+       */
       currentProgressRef.current =
-        current + difference * 0.045;
+        current + difference * 0.12;
 
       const progress =
         currentProgressRef.current;
 
+      const frameCount = getFrameCount();
+
       const frameIndex = Math.min(
-(window.innerWidth >= DESKTOP_BREAKPOINT ? DESKTOP_FRAME_COUNT : MOBILE_FRAME_COUNT) - 1,
+        frameCount - 1,
         Math.max(
           0,
           Math.floor(
-progress * ((window.innerWidth >= DESKTOP_BREAKPOINT ? DESKTOP_FRAME_COUNT : MOBILE_FRAME_COUNT) - 1)
+            progress * (frameCount - 1)
           )
         )
       );
 
-      // Load frames around current position
-      for (
-        let i = frameIndex - 5;
-        i <= frameIndex + 12;
-        i++
-      ) {
-        loadFrame(i);
-      }
-
+      /*
+       * The complete sequence is already being loaded,
+       * so we do not need to constantly start new image
+       * requests while the user is scrolling.
+       */
       drawFrame(frameIndex);
 
       let textIndex = -1;
@@ -215,7 +232,12 @@ progress * ((window.innerWidth >= DESKTOP_BREAKPOINT ? DESKTOP_FRAME_COUNT : MOB
         }
       });
 
-      setActiveText(textIndex);
+      if (
+        lastTextIndexRef.current !== textIndex
+      ) {
+        lastTextIndexRef.current = textIndex;
+        setActiveText(textIndex);
+      }
 
       rafRef.current =
         requestAnimationFrame(animate);
@@ -226,15 +248,12 @@ progress * ((window.innerWidth >= DESKTOP_BREAKPOINT ? DESKTOP_FRAME_COUNT : MOB
     };
 
     const onResize = () => {
-      const newIsDesktop =
-        window.innerWidth >= DESKTOP_BREAKPOINT;
+      const newIsDesktop = getIsDesktop();
 
       const newFolder = newIsDesktop
         ? '/scroll-frames-desktop/'
         : '/scroll-frames/';
 
-      // If switching between mobile and desktop,
-      // reload frames from the correct folder.
       if (
         frameFolderRef.current !== newFolder
       ) {
@@ -244,7 +263,15 @@ progress * ((window.innerWidth >= DESKTOP_BREAKPOINT ? DESKTOP_FRAME_COUNT : MOB
 
         currentFrameRef.current = -1;
 
-        for (let i = 0; i < 30; i++) {
+        const newFrameCount = newIsDesktop
+          ? DESKTOP_FRAME_COUNT
+          : MOBILE_FRAME_COUNT;
+
+        for (
+          let i = 0;
+          i < newFrameCount;
+          i++
+        ) {
           loadFrame(i);
         }
       }
@@ -351,4 +378,4 @@ progress * ((window.innerWidth >= DESKTOP_BREAKPOINT ? DESKTOP_FRAME_COUNT : MOB
       </div>
     </section>
   );
-}
+        }
