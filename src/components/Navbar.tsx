@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 import { Sun, Moon, Languages } from 'lucide-react';
 
 interface NavbarProps {
@@ -11,19 +12,12 @@ interface NavbarProps {
 
 export default function AnimatedNavbar({ onNavigate }: NavbarProps) {
   const [active, setActive] = useState(false);
-  const [language, setLanguage] = useState<'EN' | 'AR'>('EN');
   const containerRef = useRef<HTMLDivElement>(null);
   const openTl = useRef<gsap.core.Timeline | null>(null);
   const closeTl = useRef<gsap.core.Timeline | null>(null);
+
   const { theme, toggleTheme } = useTheme();
-
-  useEffect(() => {
-    const savedLanguage = localStorage.getItem('veltrion-language');
-
-    if (savedLanguage === 'AR' || savedLanguage === 'EN') {
-      setLanguage(savedLanguage);
-    }
-  }, []);
+  const { language, toggleLanguage, isArabic } = useLanguage();
 
   useEffect(() => {
     const el = containerRef.current;
@@ -151,8 +145,8 @@ export default function AnimatedNavbar({ onNavigate }: NavbarProps) {
       .set(el.querySelector('.btn'), { pointerEvents: 'all' });
 
     return () => {
-      if (openTl.current) openTl.current.kill();
-      if (closeTl.current) closeTl.current.kill();
+      openTl.current?.kill();
+      closeTl.current?.kill();
     };
   }, []);
 
@@ -183,18 +177,31 @@ export default function AnimatedNavbar({ onNavigate }: NavbarProps) {
     }
   };
 
-  const toggleLanguage = () => {
-    const nextLanguage = language === 'EN' ? 'AR' : 'EN';
-
-    setLanguage(nextLanguage);
-    localStorage.setItem('veltrion-language', nextLanguage);
-
-    document.documentElement.dir =
-      nextLanguage === 'AR' ? 'rtl' : 'ltr';
-
-    document.documentElement.lang =
-      nextLanguage === 'AR' ? 'ar' : 'en';
-  };
+  const labels = isArabic
+    ? {
+        home: 'الرئيسية',
+        cars: 'السيارات',
+        technology: 'التكنولوجيا',
+        about: 'عن الشركة',
+        contact: 'تواصل معنا',
+        inquire: 'استفسار',
+        switchToEnglish: 'التبديل إلى الإنجليزية',
+        switchToArabic: 'التبديل إلى العربية',
+        toggleTheme: 'تبديل المظهر',
+        navigation: 'تبديل قائمة التنقل',
+      }
+    : {
+        home: 'Home',
+        cars: 'Cars',
+        technology: 'Technology',
+        about: 'About',
+        contact: 'Contact',
+        inquire: 'Inquire',
+        switchToEnglish: 'Switch to English',
+        switchToArabic: 'Switch to Arabic',
+        toggleTheme: 'Toggle Theme',
+        navigation: 'Toggle Navigation Menu',
+      };
 
   return (
     <header
@@ -364,14 +371,9 @@ export default function AnimatedNavbar({ onNavigate }: NavbarProps) {
       />
 
       <div className="anim-nav-container relative w-full max-w-full h-full box-border">
-
-        {/* Top Header Bar for Logo and Theme Switcher */}
         <div className="fixed top-0 left-0 right-0 h-16 sm:h-20 md:h-24 px-3 sm:px-6 md:px-14 flex items-center justify-between z-40 pointer-events-auto backdrop-blur-md bg-white/30 dark:bg-[#070b08]/30 border-b border-black/5 dark:border-white/5 transition-colors duration-300 w-full max-w-full box-border">
-
-          {/* Spacer for toggle button on left */}
           <div className="w-12 sm:w-16 md:w-20 flex-shrink-0"></div>
 
-          {/* Brand Logo Title */}
           <div
             className="flex items-center justify-center cursor-pointer min-w-0 px-1 overflow-hidden"
             onClick={() => handleNavClick('hero')}
@@ -384,17 +386,13 @@ export default function AnimatedNavbar({ onNavigate }: NavbarProps) {
             </span>
           </div>
 
-          {/* Language + Theme + CTA */}
           <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
-
             <div className="flex flex-col items-center gap-1">
-
-              {/* Language Toggle */}
               <button
                 onClick={toggleLanguage}
                 className="group flex items-center gap-1.5 px-2 py-1.5 sm:px-2.5 sm:py-2 rounded-full bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 text-slate-900 dark:text-white transition-all duration-300 border border-black/10 dark:border-white/10"
-                title={`Switch to ${language === 'EN' ? 'Arabic' : 'English'}`}
-                aria-label="Toggle Language"
+                title={language === 'EN' ? labels.switchToArabic : labels.switchToEnglish}
+                aria-label={labels.switchToArabic}
               >
                 <Languages className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 <span className="text-[9px] sm:text-[10px] font-bold tracking-widest">
@@ -402,12 +400,11 @@ export default function AnimatedNavbar({ onNavigate }: NavbarProps) {
                 </span>
               </button>
 
-              {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}
                 className="p-1.5 sm:p-2.5 rounded-full bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 text-slate-900 dark:text-white transition-all duration-300 border border-black/10 dark:border-white/10"
-                title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-                aria-label="Toggle Theme"
+                title={labels.toggleTheme}
+                aria-label={labels.toggleTheme}
               >
                 {theme === 'dark' ? (
                   <Sun className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
@@ -415,24 +412,21 @@ export default function AnimatedNavbar({ onNavigate }: NavbarProps) {
                   <Moon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-700" />
                 )}
               </button>
-
             </div>
 
             <button
               onClick={() => handleNavClick('contact')}
               className="hidden sm:block px-4 md:px-5 py-2 text-[10px] md:text-xs font-semibold tracking-widest text-white uppercase bg-[#223023] hover:bg-[#2c3e2e] rounded-md transition-all duration-300 shadow-md hover:shadow-lg whitespace-nowrap"
             >
-              Inquire
+              {labels.inquire}
             </button>
-
           </div>
         </div>
 
-        {/* Circular Menu Toggle Button */}
         <button
           className="btn"
           onClick={handleToggleClick}
-          aria-label="Toggle Navigation Menu"
+          aria-label={labels.navigation}
         >
           <div className="btn--bg" />
 
@@ -447,31 +441,29 @@ export default function AnimatedNavbar({ onNavigate }: NavbarProps) {
           </div>
         </button>
 
-        {/* Fullscreen Circular Nav Menu */}
         <nav>
           <ul>
             <li onClick={() => handleNavClick('hero')}>
-              <span>Home</span>
+              <span>{labels.home}</span>
             </li>
 
             <li onClick={() => handleNavClick('cars')}>
-              <span>Cars</span>
+              <span>{labels.cars}</span>
             </li>
 
             <li onClick={() => handleNavClick('technology')}>
-              <span>Technology</span>
+              <span>{labels.technology}</span>
             </li>
 
             <li onClick={() => handleNavClick('about')}>
-              <span>About</span>
+              <span>{labels.about}</span>
             </li>
 
             <li onClick={() => handleNavClick('contact')}>
-              <span>Contact</span>
+              <span>{labels.contact}</span>
             </li>
           </ul>
         </nav>
-
       </div>
     </header>
   );
