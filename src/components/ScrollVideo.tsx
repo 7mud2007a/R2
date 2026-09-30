@@ -34,7 +34,9 @@ export default function ScrollVideo() {
   const imagesRef = useRef<HTMLImageElement[]>([]);
   const currentFrameRef = useRef(-1);
   const rafRef = useRef<number | null>(null);
+
   const [activeText, setActiveText] = useState(-1);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -78,22 +80,41 @@ export default function ScrollVideo() {
       images[index] = image;
     };
 
+    // Preload first frames
     for (let i = 0; i < 30; i++) {
       loadFrame(i);
     }
 
     const update = () => {
-      const section = canvas.closest('[data-scroll-section]');
+      const section = document.querySelector(
+        '[data-scroll-section]'
+      ) as HTMLElement | null;
+
       if (!section) return;
 
       const rect = section.getBoundingClientRect();
-      const distance = section.clientHeight - window.innerHeight;
 
-      if (distance <= 0) return;
+      const scrollDistance =
+        section.offsetHeight - window.innerHeight;
 
+      if (scrollDistance <= 0) return;
+
+      // Section starts
+      const sectionStarted = rect.top <= 0;
+
+      // Section still active
+      const sectionActive = rect.bottom > window.innerHeight;
+
+      // Keep the visual fixed only while inside this section
+      setVisible(sectionStarted && sectionActive);
+
+      // Calculate progress through the section
       const progress = Math.max(
         0,
-        Math.min(1, -rect.top / distance)
+        Math.min(
+          1,
+          -rect.top / scrollDistance
+        )
       );
 
       const frameIndex = Math.min(
@@ -101,7 +122,12 @@ export default function ScrollVideo() {
         Math.floor(progress * (FRAME_COUNT - 1))
       );
 
-      for (let i = frameIndex - 4; i <= frameIndex + 10; i++) {
+      // Load frames around current position
+      for (
+        let i = frameIndex - 5;
+        i <= frameIndex + 12;
+        i++
+      ) {
         loadFrame(i);
       }
 
@@ -110,7 +136,10 @@ export default function ScrollVideo() {
       let textIndex = -1;
 
       TEXTS.forEach((text, index) => {
-        if (progress >= text.start && progress <= text.end) {
+        if (
+          progress >= text.start &&
+          progress <= text.end
+        ) {
           textIndex = index;
         }
       });
@@ -129,12 +158,27 @@ export default function ScrollVideo() {
 
     update();
 
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
+    window.addEventListener(
+      'scroll',
+      onScroll,
+      { passive: true }
+    );
+
+    window.addEventListener(
+      'resize',
+      onScroll
+    );
 
     return () => {
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onScroll);
+      window.removeEventListener(
+        'scroll',
+        onScroll
+      );
+
+      window.removeEventListener(
+        'resize',
+        onScroll
+      );
 
       if (rafRef.current !== null) {
         cancelAnimationFrame(rafRef.current);
@@ -147,13 +191,20 @@ export default function ScrollVideo() {
       data-scroll-section
       className="relative h-[700vh] w-full bg-black"
     >
-      <div className="sticky top-0 h-screen w-full overflow-hidden bg-black">
+      <div
+        className={`fixed inset-0 z-30 h-screen w-full overflow-hidden bg-black transition-opacity duration-300 ${
+          visible
+            ? 'pointer-events-auto opacity-100'
+            : 'pointer-events-none opacity-0'
+        }`}
+      >
         <canvas
           ref={canvasRef}
           className="absolute inset-0 h-full w-full object-contain"
         />
 
         <div className="pointer-events-none absolute inset-0">
+
           <div className="absolute left-6 top-1/2 hidden h-px w-16 bg-white/30 md:block" />
 
           <div className="absolute left-6 top-1/2 hidden -translate-y-1/2 md:block">
