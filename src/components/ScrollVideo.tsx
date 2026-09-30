@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-const FRAME_COUNT = 300;
+const FRAME_COUNT = 200;
 const DESKTOP_BREAKPOINT = 768;
 
 const TEXTS = [
