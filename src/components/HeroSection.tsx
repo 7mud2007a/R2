@@ -60,8 +60,9 @@ export default function HeroSection({ onExploreClick }: HeroSectionProps) {
 
           <p
             dir={isArabic ? 'rtl' : 'ltr'}
-            className="font-sans text-lg sm:text-2xl text-slate-600 dark:text-slate-300 max-w-2xl font-light leading-relaxed pt-2"
-          >
+         
+           className={`${isArabic ? 'font-arabic' : 'font-sans'} text-lg sm:text-2xl text-slate-600 dark:text-slate-300 max-w-2xl font-light leading-relaxed pt-2`}
+            >
             {text.description}
           </p>
         </div>
