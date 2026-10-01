@@ -22,7 +22,14 @@
     box-sizing: border-box;
   }
 
+  html[lang='ar'],
   html[lang='ar'] body {
+    font-family: 'IBM Plex Sans Arabic', sans-serif;
+  }
+}
+
+@layer utilities {
+  .font-arabic {
     font-family: 'IBM Plex Sans Arabic', sans-serif;
   }
 }
