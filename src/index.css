@@ -26,6 +26,18 @@
   html[lang='ar'] body {
     font-family: 'IBM Plex Sans Arabic', sans-serif;
   }
+
+  /*
+   * Arabic mode:
+   * Force the entire website to use IBM Plex Sans Arabic.
+   * This overrides Tailwind font classes, component font
+   * declarations, and inline font-family declarations.
+   */
+  html[lang='ar'] *,
+  html[lang='ar'] *::before,
+  html[lang='ar'] *::after {
+    font-family: 'IBM Plex Sans Arabic', sans-serif !important;
+  }
 }
 
 @layer utilities {
