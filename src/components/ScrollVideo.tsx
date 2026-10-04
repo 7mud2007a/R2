@@ -86,12 +86,6 @@ export default function ScrollVideo() {
       }
     };
 
-    const onCanPlayThrough = () => {
-      readyRef.current = true;
-      setLoadedPercent(100);
-      setPreloadComplete(true);
-    };
-
     const onLoadedData = () => {
       updateBufferedProgress();
     };
@@ -99,7 +93,20 @@ export default function ScrollVideo() {
     video.addEventListener('progress', updateBufferedProgress);
     video.addEventListener('loadedmetadata', updateBufferedProgress);
     video.addEventListener('loadeddata', onLoadedData);
-    video.addEventListener('canplaythrough', onCanPlayThrough);
+
+    const progressTimer = window.setInterval(updateBufferedProgress, 200);
+
+    const onVideoError = () => {
+      if (video.src.endsWith('scroll.webm')) {
+        readyRef.current = false;
+        setPreloadComplete(false);
+        setLoadedPercent(0);
+        video.src = mp4;
+        video.load();
+      }
+    };
+
+    video.addEventListener('error', onVideoError);
 
     const section = document.querySelector(
       '[data-scroll-section]'
@@ -273,7 +280,8 @@ export default function ScrollVideo() {
       video.removeEventListener('progress', updateBufferedProgress);
       video.removeEventListener('loadedmetadata', updateBufferedProgress);
       video.removeEventListener('loadeddata', onLoadedData);
-      video.removeEventListener('canplaythrough', onCanPlayThrough);
+      video.removeEventListener('error', onVideoError);
+      window.clearInterval(progressTimer);
 
       if (rafRef.current !== null) {
         cancelAnimationFrame(rafRef.current);
