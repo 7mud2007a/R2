@@ -1,7 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 
-const MOBILE_FRAME_COUNT = 300;
-const DESKTOP_FRAME_COUNT = 200;
 const DESKTOP_BREAKPOINT = 768;
 
 const TEXTS = [
@@ -32,206 +30,100 @@ const TEXTS = [
 ];
 
 export default function ScrollVideo() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const imagesRef = useRef<HTMLImageElement[]>([]);
-  const frameFolderRef = useRef('/scroll-frames/');
-  const preloadCompleteRef = useRef(false);
-  const loadedCountRef = useRef(0);
-
-  const currentFrameRef = useRef(-1);
-  const rafRef = useRef<number | null>(null);
-  const lastTextIndexRef = useRef(-1);
-
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const scrollLockYRef = useRef<number | null>(null);
   const targetProgressRef = useRef(0);
   const currentProgressRef = useRef(0);
-  const scrollLockYRef = useRef<number | null>(null);
+  const rafRef = useRef<number | null>(null);
+  const readyRef = useRef(false);
+  const lastTextIndexRef = useRef(-1);
 
   const [activeText, setActiveText] = useState(-1);
   const [visible, setVisible] = useState(false);
-  const [loadedFrames, setLoadedFrames] = useState(0);
+  const [loadedPercent, setLoadedPercent] = useState(0);
   const [preloadComplete, setPreloadComplete] = useState(false);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    const video = videoRef.current;
+    if (!video) return;
 
-    const ctx = canvas.getContext('2d', {
-      alpha: false,
-      desynchronized: true,
-    });
+    const isDesktop = window.innerWidth >= DESKTOP_BREAKPOINT;
+    const folder = isDesktop ? '/scroll-videos-desktop/' : '/scroll-videos/';
 
-    if (!ctx) return;
+    video.src = folder + 'scroll.webm';
+    video.load();
 
-    const getIsDesktop = () =>
-      window.innerWidth >= DESKTOP_BREAKPOINT;
+    const updateBufferedProgress = () => {
+      if (!video.duration || !Number.isFinite(video.duration)) return;
 
-    const getFrameCount = () =>
-      getIsDesktop()
-        ? DESKTOP_FRAME_COUNT
-        : MOBILE_FRAME_COUNT;
+      let bufferedEnd = 0;
 
-    const setFrameFolder = () => {
-      frameFolderRef.current = getIsDesktop()
-        ? '/scroll-frames-desktop/'
-        : '/scroll-frames/';
-    };
-
-    setFrameFolder();
-
-    const framePath = (index: number) =>
-      `${frameFolderRef.current}frame_${String(index + 1).padStart(4, '0')}.webp`;
-
-    const drawFrame = (index: number) => {
-      const image = imagesRef.current[index];
-
-      if (!image || !image.complete || image.naturalWidth === 0) {
-        return;
-      }
-
-      if (currentFrameRef.current === index) {
-        return;
-      }
-
-      currentFrameRef.current = index;
-
-      if (
-        canvas.width !== image.naturalWidth ||
-        canvas.height !== image.naturalHeight
-      ) {
-        canvas.width = image.naturalWidth;
-        canvas.height = image.naturalHeight;
-      }
-
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(image, 0, 0);
-    };
-
-    const loadFrame = (index: number) => {
-      const frameCount = getFrameCount();
-
-      if (
-        index < 0 ||
-        index >= frameCount ||
-        imagesRef.current[index]
-      ) {
-        return;
-      }
-
-      const image = new Image();
-
-      image.decoding = 'async';
-      image.loading = 'eager';
-      image.fetchPriority = index < 16 ? 'high' : 'auto';
-      image.src = framePath(index);
-
-      let counted = false;
-      const markLoaded = () => {
-        if (counted) return;
-        counted = true;
-        loadedCountRef.current = Math.min(
-          frameCount,
-          loadedCountRef.current + 1
-        );
-
-        const next = loadedCountRef.current;
-        if (next >= frameCount) {
-          preloadCompleteRef.current = true;
-          setLoadedFrames(next);
-          setPreloadComplete(true);
-          return;
-        }
-
-        // Avoid a React render for every single frame.
-        if (next === 1 || next % 4 === 0) {
-          setLoadedFrames(next);
-        }
-      };
-
-      image.onload = () => {
-        markLoaded();
-        if (index === 0 && currentFrameRef.current === -1) drawFrame(0);
-      };
-
-      image.onerror = markLoaded;
-
-      imagesRef.current[index] = image;
-    };
-
-    /*
-     * Keep a rolling pool of 10 concurrent requests.
-     *
-     * We do NOT download all frames at once, because hundreds
-     * of simultaneous image requests can saturate the browser's
-     * connection queue and make decoding/memory pressure worse.
-     *
-     * As soon as one frame finishes, its slot is immediately
-     * reused for the next frame. There is no artificial delay
-     * between batches.
-     */
-    const preloadCount = getFrameCount();
-    const CONCURRENT_LOADS = 10;
-    let nextFrameToLoad = 0;
-    let activeLoads = 0;
-
-    const startNextFrames = () => {
-      while (
-        activeLoads < CONCURRENT_LOADS &&
-        nextFrameToLoad < preloadCount
-      ) {
-        const index = nextFrameToLoad++;
-        activeLoads += 1;
-
-        loadFrame(index);
-
-        const image = imagesRef.current[index];
-
-        if (image) {
-          const finish = () => {
-            activeLoads = Math.max(0, activeLoads - 1);
-            startNextFrames();
-          };
-
-          image.addEventListener('load', finish, { once: true });
-          image.addEventListener('error', finish, { once: true });
+      for (let i = 0; i < video.buffered.length; i += 1) {
+        if (
+          video.currentTime >= video.buffered.start(i) &&
+          video.currentTime <= video.buffered.end(i)
+        ) {
+          bufferedEnd = video.buffered.end(i);
+          break;
         }
       }
+
+      if (bufferedEnd === 0 && video.buffered.length > 0) {
+        bufferedEnd = video.buffered.end(video.buffered.length - 1);
+      }
+
+      const percent = Math.min(
+        100,
+        Math.round((bufferedEnd / video.duration) * 100)
+      );
+
+      setLoadedPercent(percent);
+
+      if (percent >= 99) {
+        readyRef.current = true;
+        setPreloadComplete(true);
+        setLoadedPercent(100);
+      }
     };
 
-    startNextFrames();
+    const onCanPlayThrough = () => {
+      readyRef.current = true;
+      setLoadedPercent(100);
+      setPreloadComplete(true);
+    };
+
+    const onLoadedData = () => {
+      updateBufferedProgress();
+    };
+
+    video.addEventListener('progress', updateBufferedProgress);
+    video.addEventListener('loadedmetadata', updateBufferedProgress);
+    video.addEventListener('loadeddata', onLoadedData);
+    video.addEventListener('canplaythrough', onCanPlayThrough);
+
+    const section = document.querySelector(
+      '[data-scroll-section]'
+    ) as HTMLElement | null;
 
     const updateTarget = () => {
-      const section = document.querySelector(
-        '[data-scroll-section]'
-      ) as HTMLElement | null;
-
       if (!section) return;
 
       const rect = section.getBoundingClientRect();
-
-      const scrollDistance =
-        section.offsetHeight - window.innerHeight;
+      const scrollDistance = section.offsetHeight - window.innerHeight;
 
       if (scrollDistance <= 0) return;
 
       const sectionStarted = rect.top <= 0;
-
-      const sectionActive =
-        rect.bottom > window.innerHeight;
+      const sectionActive = rect.bottom > window.innerHeight;
 
       const isLoaderActive =
         sectionStarted &&
         sectionActive &&
-        !preloadCompleteRef.current;
+        !readyRef.current;
 
       if (isLoaderActive) {
-        /*
-         * Freeze the page at the exact beginning of the
-         * scroll section. Any wheel/touch movement while
-         * loading is immediately returned to this position.
-         */
         if (scrollLockYRef.current === null) {
-          scrollLockYRef.current =
-            window.scrollY + rect.top;
+          scrollLockYRef.current = window.scrollY + rect.top;
         }
 
         if (
@@ -245,65 +137,36 @@ export default function ScrollVideo() {
 
         targetProgressRef.current = 0;
         currentProgressRef.current = 0;
-      } else if (preloadCompleteRef.current) {
+      } else if (readyRef.current) {
         scrollLockYRef.current = null;
 
-        const progress = Math.max(
+        targetProgressRef.current = Math.max(
           0,
-          Math.min(
-            1,
-            -rect.top / scrollDistance
-          )
+          Math.min(1, -rect.top / scrollDistance)
         );
-
-        targetProgressRef.current = progress;
       }
 
-      setVisible(
-        sectionStarted && sectionActive
-      );
+      setVisible(sectionStarted && sectionActive);
     };
 
     const animate = () => {
-      const target =
-        targetProgressRef.current;
-
-      const current =
-        currentProgressRef.current;
-
       const difference =
-        target - current;
+        targetProgressRef.current - currentProgressRef.current;
 
-      /*
-       * Faster response to finger/mouse movement.
-       * The old 0.045 value made the animation feel
-       * delayed behind the actual scroll.
-       */
-      currentProgressRef.current =
-        current + difference * 0.12;
+      currentProgressRef.current += difference * 0.12;
 
-      const progress =
-        currentProgressRef.current;
+      const progress = currentProgressRef.current;
 
-      const frameCount = getFrameCount();
+      if (
+        readyRef.current &&
+        video.duration &&
+        Number.isFinite(video.duration)
+      ) {
+        const targetTime = progress * video.duration;
 
-      const frameIndex = Math.min(
-        frameCount - 1,
-        Math.max(
-          0,
-          Math.floor(
-            progress * (frameCount - 1)
-          )
-        )
-      );
-
-      /*
-       * The complete sequence is already being loaded,
-       * so we do not need to constantly start new image
-       * requests while the user is scrolling.
-       */
-      if (preloadCompleteRef.current) {
-        drawFrame(frameIndex);
+        if (Math.abs(video.currentTime - targetTime) > 0.001) {
+          video.currentTime = targetTime;
+        }
       }
 
       let textIndex = -1;
@@ -317,15 +180,12 @@ export default function ScrollVideo() {
         }
       });
 
-      if (
-        lastTextIndexRef.current !== textIndex
-      ) {
+      if (lastTextIndexRef.current !== textIndex) {
         lastTextIndexRef.current = textIndex;
         setActiveText(textIndex);
       }
 
-      rafRef.current =
-        requestAnimationFrame(animate);
+      rafRef.current = requestAnimationFrame(animate);
     };
 
     const onScroll = () => {
@@ -340,7 +200,10 @@ export default function ScrollVideo() {
     };
 
     const preventScrollWhileLoading = (event: Event) => {
-      if (scrollLockYRef.current === null || preloadCompleteRef.current) {
+      if (
+        scrollLockYRef.current === null ||
+        readyRef.current
+      ) {
         return;
       }
 
@@ -352,78 +215,71 @@ export default function ScrollVideo() {
       });
     };
 
-    const onResize = () => {
-      // Keep the asset set chosen at page load. A browser resize is not
-      // a new device and must never mix mobile + desktop frame requests.
-      updateTarget();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (
+        scrollLockYRef.current === null ||
+        readyRef.current
+      ) {
+        return;
+      }
+
+      const blockedKeys = [
+        'ArrowDown',
+        'ArrowUp',
+        'PageDown',
+        'PageUp',
+        ' ',
+        'Home',
+        'End',
+      ];
+
+      if (blockedKeys.includes(event.key)) {
+        event.preventDefault();
+        window.scrollTo({
+          top: scrollLockYRef.current,
+          behavior: 'auto',
+        });
+      }
     };
 
     updateTarget();
+    rafRef.current = requestAnimationFrame(animate);
 
-    rafRef.current =
-      requestAnimationFrame(animate);
-
-    window.addEventListener(
-      'scroll',
-      onScroll,
-      { passive: true }
-    );
-
+    window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener(
       'wheel',
       preventScrollWhileLoading,
       { passive: false }
     );
-
     window.addEventListener(
       'touchmove',
       preventScrollWhileLoading,
       { passive: false }
     );
-
-    window.addEventListener(
-      'resize',
-      onResize
-    );
+    window.addEventListener('keydown', onKeyDown);
 
     return () => {
-      window.removeEventListener(
-        'scroll',
-        onScroll
-      );
-
+      window.removeEventListener('scroll', onScroll);
       window.removeEventListener(
         'wheel',
         preventScrollWhileLoading
       );
-
       window.removeEventListener(
         'touchmove',
         preventScrollWhileLoading
       );
+      window.removeEventListener('keydown', onKeyDown);
 
-      window.removeEventListener(
-        'resize',
-        onResize
-      );
+      video.removeEventListener('progress', updateBufferedProgress);
+      video.removeEventListener('loadedmetadata', updateBufferedProgress);
+      video.removeEventListener('loadeddata', onLoadedData);
+      video.removeEventListener('canplaythrough', onCanPlayThrough);
 
       if (rafRef.current !== null) {
-        cancelAnimationFrame(
-          rafRef.current
-        );
+        cancelAnimationFrame(rafRef.current);
       }
     };
   }, []);
-
-  const frameCount =
-    typeof window !== 'undefined' && window.innerWidth >= DESKTOP_BREAKPOINT
-      ? DESKTOP_FRAME_COUNT
-      : MOBILE_FRAME_COUNT;
-
-  const loadingPercent = Math.min(
-    100,
-    Math.round((loadedFrames / frameCount) * 100)
-  );
 
   const showLoader = visible && !preloadComplete;
 
@@ -439,13 +295,16 @@ export default function ScrollVideo() {
             : 'pointer-events-none opacity-0'
         }`}
       >
-        <canvas
-          ref={canvasRef}
+        <video
+          ref={videoRef}
+          muted
+          playsInline
+          preload="auto"
           className="absolute inset-0 h-full w-full object-contain"
+          aria-hidden="true"
         />
 
         <div className="pointer-events-none absolute inset-0">
-
           <div className="absolute left-6 top-1/2 hidden h-px w-16 bg-white/30 md:block" />
 
           <div className="absolute left-6 top-1/2 hidden -translate-y-1/2 md:block">
@@ -486,23 +345,31 @@ export default function ScrollVideo() {
               </p>
             </div>
           ))}
-
         </div>
 
         {showLoader && (
           <div className="absolute inset-0 z-50 flex items-center justify-center bg-[#070b08]/95">
             <div className="flex w-[280px] flex-col items-center text-center md:w-[360px]">
               <div className="mb-5 h-px w-12 bg-white/60" />
-              <p className="mb-3 text-[10px] uppercase tracking-[0.45em] text-white/50">R2 / MOTION</p>
-              <div className="mb-4 text-5xl font-light tracking-[0.08em] text-white md:text-6xl">{loadingPercent}%</div>
-              <div className="h-px w-full overflow-hidden bg-white/10">
-                <div className="h-full bg-white/70 transition-[width] duration-200" style={{ width: loadingPercent + '%' }} />
+              <p className="mb-3 text-[10px] uppercase tracking-[0.45em] text-white/50">
+                R2 / MOTION
+              </p>
+              <div className="mb-4 text-5xl font-light tracking-[0.08em] text-white md:text-6xl">
+                {loadedPercent}%
               </div>
-              <p className="mt-4 text-[9px] uppercase tracking-[0.28em] text-white/40">Preparing the cinematic experience</p>
+              <div className="h-px w-full overflow-hidden bg-white/10">
+                <div
+                  className="h-full bg-white/70 transition-[width] duration-200"
+                  style={{ width: loadedPercent + '%' }}
+                />
+              </div>
+              <p className="mt-4 text-[9px] uppercase tracking-[0.28em] text-white/40">
+                Preparing the cinematic experience
+              </p>
             </div>
           </div>
         )}
       </div>
     </section>
   );
-        }
+}
