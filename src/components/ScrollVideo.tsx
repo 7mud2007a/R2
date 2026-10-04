@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 const DESKTOP_BREAKPOINT = 768;
 const DESKTOP_FRAMES = 200;
 const MOBILE_FRAMES = 300;
-const CONCURRENT_LOADS = 10;
+const CONCURRENT_LOADS = 24;
 
 const TEXTS = [
   {
@@ -60,6 +60,7 @@ export default function ScrollVideo() {
 
     let nextFrameToLoad = 0;
     let activeLoads = 0;
+    let loadedCount = 0;
     let cancelled = false;
 
     const frameUrl = (index: number) =>
@@ -95,7 +96,7 @@ export default function ScrollVideo() {
         image.decoding = 'async';
         image.loading = 'eager';
 
-        if (frameIndex < 12) {
+        if (frameIndex < 24) {
           image.fetchPriority = 'high';
         }
 
@@ -105,18 +106,15 @@ export default function ScrollVideo() {
           if (cancelled) return;
 
           images[frameIndex] = image;
-          const loaded = images.reduce(
-            (count, current) => count + (current ? 1 : 0),
-            0
-          );
+          loadedCount += 1;
           const percent = Math.min(
             100,
-            Math.round((loaded / totalFrames) * 100)
+            Math.floor((loadedCount * 100) / totalFrames)
           );
 
           setLoadedPercent(percent);
 
-          if (loaded >= totalFrames) {
+          if (loadedCount === totalFrames) {
             readyRef.current = true;
             setPreloadComplete(true);
             setLoadedPercent(100);
@@ -355,7 +353,7 @@ export default function ScrollVideo() {
               </div>
               <div className="h-px w-full overflow-hidden bg-white/10">
                 <div
-                  className="h-full bg-white/70 transition-[width] duration-200"
+                  className="h-full bg-white/70 transition-[width] duration-75"
                   style={{ width: loadedPercent + '%' }}
                 />
               </div>
