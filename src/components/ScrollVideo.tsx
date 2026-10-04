@@ -49,8 +49,12 @@ export default function ScrollVideo() {
 
     const isDesktop = window.innerWidth >= DESKTOP_BREAKPOINT;
     const folder = isDesktop ? '/scroll-videos-desktop/' : '/scroll-videos/';
+    const webm = folder + 'scroll.webm';
+    const mp4 = folder + 'scroll.mp4';
 
-    video.src = folder + 'scroll.webm';
+    video.src = video.canPlayType('video/webm; codecs="vp9"')
+      ? webm
+      : mp4;
     video.load();
 
     const updateBufferedProgress = () => {
