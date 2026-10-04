@@ -35,6 +35,8 @@ export default function ScrollVideo() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imagesRef = useRef<HTMLImageElement[]>([]);
   const frameFolderRef = useRef('/scroll-frames/');
+  const preloadCompleteRef = useRef(false);
+  const loadedCountRef = useRef(0);
 
   const currentFrameRef = useRef(-1);
   const rafRef = useRef<number | null>(null);
@@ -76,13 +78,11 @@ export default function ScrollVideo() {
 
     setFrameFolder();
 
-    const images = imagesRef.current;
-
     const framePath = (index: number) =>
       `${frameFolderRef.current}frame_${String(index + 1).padStart(4, '0')}.webp`;
 
     const drawFrame = (index: number) => {
-      const image = images[index];
+      const image = imagesRef.current[index];
 
       if (!image || !image.complete || image.naturalWidth === 0) {
         return;
@@ -112,7 +112,7 @@ export default function ScrollVideo() {
       if (
         index < 0 ||
         index >= frameCount ||
-        images[index]
+        imagesRef.current[index]
       ) {
         return;
       }
@@ -121,15 +121,30 @@ export default function ScrollVideo() {
 
       image.decoding = 'async';
       image.loading = 'eager';
-      image.fetchPriority = index < 12 ? 'high' : 'auto';
+      image.fetchPriority = index < 16 ? 'high' : 'auto';
       image.src = framePath(index);
 
+      let counted = false;
       const markLoaded = () => {
-        setLoadedFrames((loaded) => {
-          const next = Math.min(frameCount, loaded + 1);
-          if (next >= frameCount) setPreloadComplete(true);
-          return next;
-        });
+        if (counted) return;
+        counted = true;
+        loadedCountRef.current = Math.min(
+          frameCount,
+          loadedCountRef.current + 1
+        );
+
+        const next = loadedCountRef.current;
+        if (next >= frameCount) {
+          preloadCompleteRef.current = true;
+          setLoadedFrames(next);
+          setPreloadComplete(true);
+          return;
+        }
+
+        // Avoid a React render for every single frame.
+        if (next === 1 || next % 4 === 0) {
+          setLoadedFrames(next);
+        }
       };
 
       image.onload = () => {
@@ -139,7 +154,7 @@ export default function ScrollVideo() {
 
       image.onerror = markLoaded;
 
-      images[index] = image;
+      imagesRef.current[index] = image;
     };
 
     /*
@@ -168,7 +183,7 @@ export default function ScrollVideo() {
 
         loadFrame(index);
 
-        const image = images[index];
+        const image = imagesRef.current[index];
 
         if (image) {
           const finish = () => {
@@ -206,7 +221,7 @@ export default function ScrollVideo() {
       const isLoaderActive =
         sectionStarted &&
         sectionActive &&
-        !preloadComplete;
+        !preloadCompleteRef.current;
 
       if (isLoaderActive) {
         /*
@@ -230,7 +245,7 @@ export default function ScrollVideo() {
 
         targetProgressRef.current = 0;
         currentProgressRef.current = 0;
-      } else if (preloadComplete) {
+      } else if (preloadCompleteRef.current) {
         scrollLockYRef.current = null;
 
         const progress = Math.max(
@@ -287,7 +302,7 @@ export default function ScrollVideo() {
        * so we do not need to constantly start new image
        * requests while the user is scrolling.
        */
-      if (preloadComplete) {
+      if (preloadCompleteRef.current) {
         drawFrame(frameIndex);
       }
 
@@ -325,7 +340,7 @@ export default function ScrollVideo() {
     };
 
     const preventScrollWhileLoading = (event: Event) => {
-      if (scrollLockYRef.current === null || preloadComplete) {
+      if (scrollLockYRef.current === null || preloadCompleteRef.current) {
         return;
       }
 
@@ -338,34 +353,8 @@ export default function ScrollVideo() {
     };
 
     const onResize = () => {
-      const newIsDesktop = getIsDesktop();
-
-      const newFolder = newIsDesktop
-        ? '/scroll-frames-desktop/'
-        : '/scroll-frames/';
-
-      if (
-        frameFolderRef.current !== newFolder
-      ) {
-        frameFolderRef.current = newFolder;
-
-        imagesRef.current = [];
-
-        currentFrameRef.current = -1;
-
-        const newFrameCount = newIsDesktop
-          ? DESKTOP_FRAME_COUNT
-          : MOBILE_FRAME_COUNT;
-
-        for (
-          let i = 0;
-          i < newFrameCount;
-          i++
-        ) {
-          loadFrame(i);
-        }
-      }
-
+      // Keep the asset set chosen at page load. A browser resize is not
+      // a new device and must never mix mobile + desktop frame requests.
       updateTarget();
     };
 
@@ -424,7 +413,7 @@ export default function ScrollVideo() {
         );
       }
     };
-  }, [preloadComplete]);
+  }, []);
 
   const frameCount =
     typeof window !== 'undefined' && window.innerWidth >= DESKTOP_BREAKPOINT
