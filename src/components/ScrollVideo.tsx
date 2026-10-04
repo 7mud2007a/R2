@@ -119,6 +119,8 @@ export default function ScrollVideo() {
       const image = new Image();
 
       image.decoding = 'async';
+      image.loading = 'eager';
+      image.fetchPriority = index < 12 ? 'high' : 'auto';
       image.src = framePath(index);
 
       const markLoaded = () => {
