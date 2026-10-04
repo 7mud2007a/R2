@@ -142,20 +142,46 @@ export default function ScrollVideo() {
     };
 
     /*
-     * Load ALL frames immediately.
+     * Keep a rolling pool of 10 concurrent requests.
      *
-     * The old version loaded only 10 frames at a time
-     * using requestIdleCallback(). That caused the scroll
-     * to reach frames that had not started loading yet.
+     * We do NOT download all frames at once, because hundreds
+     * of simultaneous image requests can saturate the browser's
+     * connection queue and make decoding/memory pressure worse.
      *
-     * Starting every request immediately makes the browser
-     * fetch the complete sequence as early as possible.
+     * As soon as one frame finishes, its slot is immediately
+     * reused for the next frame. There is no artificial delay
+     * between batches.
      */
     const preloadCount = getFrameCount();
+    const CONCURRENT_LOADS = 10;
+    let nextFrameToLoad = 0;
+    let activeLoads = 0;
 
-    for (let i = 0; i < preloadCount; i++) {
-      loadFrame(i);
-    }
+    const startNextFrames = () => {
+      while (
+        activeLoads < CONCURRENT_LOADS &&
+        nextFrameToLoad < preloadCount
+      ) {
+        const index = nextFrameToLoad++;
+        activeLoads += 1;
+
+        loadFrame(index);
+
+        const image = images[index];
+
+        if (image) {
+          const finish = () => {
+            activeLoads = Math.max(0, activeLoads - 1);
+            startNextFrames();
+          };
+
+          image.addEventListener('load', finish, { once: true });
+          image.addEventListener('error', finish, { once: true });
+        }
+      }
+    };
+
+    startNextFrames();
 
     const updateTarget = () => {
       const section = document.querySelector(
