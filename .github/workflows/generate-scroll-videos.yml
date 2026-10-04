@@ -1,0 +1,56 @@
+name: Generate scroll videos
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'public/scroll-frames/**'
+      - 'public/scroll-frames-desktop/**'
+      - '.github/workflows/generate-scroll-videos.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Install FFmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Generate mobile WebM
+        run: |
+          mkdir -p public/scroll-videos
+          ffmpeg -y -framerate 30 -start_number 1             -i public/scroll-frames/frame_%04d.webp             -an -c:v libvpx-vp9 -crf 28 -b:v 0             -row-mt 1 -deadline good -cpu-used 4             public/scroll-videos/scroll.webm
+
+      - name: Generate desktop WebM
+        run: |
+          mkdir -p public/scroll-videos-desktop
+          ffmpeg -y -framerate 30 -start_number 1             -i public/scroll-frames-desktop/frame_%04d.webp             -an -c:v libvpx-vp9 -crf 28 -b:v 0             -row-mt 1 -deadline good -cpu-used 4             public/scroll-videos-desktop/scroll.webm
+
+      - name: Generate mobile MP4 fallback
+        run: |
+          ffmpeg -y -framerate 30 -start_number 1             -i public/scroll-frames/frame_%04d.webp             -an -c:v libx264 -preset medium -crf 18             -pix_fmt yuv420p -movflags +faststart             public/scroll-videos/scroll.mp4
+
+      - name: Generate desktop MP4 fallback
+        run: |
+          ffmpeg -y -framerate 30 -start_number 1             -i public/scroll-frames-desktop/frame_%04d.webp             -an -c:v libx264 -preset medium -crf 18             -pix_fmt yuv420p -movflags +faststart             public/scroll-videos-desktop/scroll.mp4
+
+      - name: Show generated sizes
+        run: |
+          du -h public/scroll-videos/*
+          du -h public/scroll-videos-desktop/*
+
+      - name: Commit generated videos
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/scroll-videos public/scroll-videos-desktop
+          git diff --cached --quiet || git commit -m "Generate scroll videos from frame sequences"
+          git push
