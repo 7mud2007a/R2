@@ -42,6 +42,7 @@ export default function ScrollVideo() {
 
   const targetProgressRef = useRef(0);
   const currentProgressRef = useRef(0);
+  const scrollLockYRef = useRef<number | null>(null);
 
   const [activeText, setActiveText] = useState(-1);
   const [visible, setVisible] = useState(false);
@@ -202,19 +203,50 @@ export default function ScrollVideo() {
       const sectionActive =
         rect.bottom > window.innerHeight;
 
+      const isLoaderActive =
+        sectionStarted &&
+        sectionActive &&
+        !preloadComplete;
+
+      if (isLoaderActive) {
+        /*
+         * Freeze the page at the exact beginning of the
+         * scroll section. Any wheel/touch movement while
+         * loading is immediately returned to this position.
+         */
+        if (scrollLockYRef.current === null) {
+          scrollLockYRef.current =
+            window.scrollY + rect.top;
+        }
+
+        if (
+          Math.abs(window.scrollY - scrollLockYRef.current) > 0
+        ) {
+          window.scrollTo({
+            top: scrollLockYRef.current,
+            behavior: 'auto',
+          });
+        }
+
+        targetProgressRef.current = 0;
+        currentProgressRef.current = 0;
+      } else if (preloadComplete) {
+        scrollLockYRef.current = null;
+
+        const progress = Math.max(
+          0,
+          Math.min(
+            1,
+            -rect.top / scrollDistance
+          )
+        );
+
+        targetProgressRef.current = progress;
+      }
+
       setVisible(
         sectionStarted && sectionActive
       );
-
-      const progress = Math.max(
-        0,
-        Math.min(
-          1,
-          -rect.top / scrollDistance
-        )
-      );
-
-      targetProgressRef.current = progress;
     };
 
     const animate = () => {
@@ -283,6 +315,26 @@ export default function ScrollVideo() {
 
     const onScroll = () => {
       updateTarget();
+
+      if (scrollLockYRef.current !== null) {
+        window.scrollTo({
+          top: scrollLockYRef.current,
+          behavior: 'auto',
+        });
+      }
+    };
+
+    const preventScrollWhileLoading = (event: Event) => {
+      if (scrollLockYRef.current === null || preloadComplete) {
+        return;
+      }
+
+      event.preventDefault();
+
+      window.scrollTo({
+        top: scrollLockYRef.current,
+        behavior: 'auto',
+      });
     };
 
     const onResize = () => {
@@ -329,6 +381,18 @@ export default function ScrollVideo() {
     );
 
     window.addEventListener(
+      'wheel',
+      preventScrollWhileLoading,
+      { passive: false }
+    );
+
+    window.addEventListener(
+      'touchmove',
+      preventScrollWhileLoading,
+      { passive: false }
+    );
+
+    window.addEventListener(
       'resize',
       onResize
     );
@@ -337,6 +401,16 @@ export default function ScrollVideo() {
       window.removeEventListener(
         'scroll',
         onScroll
+      );
+
+      window.removeEventListener(
+        'wheel',
+        preventScrollWhileLoading
+      );
+
+      window.removeEventListener(
+        'touchmove',
+        preventScrollWhileLoading
       );
 
       window.removeEventListener(
