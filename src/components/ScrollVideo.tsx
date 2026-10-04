@@ -412,21 +412,6 @@ export default function ScrollVideo() {
           </div>
         )}
       </div>
-
-          <div className="absolute inset-0 z-50 flex items-center justify-center bg-[#070b08]/95">
-            <div className="flex w-[280px] flex-col items-center text-center md:w-[360px]">
-              <div className="mb-5 h-px w-12 bg-white/60" />
-              <p className="mb-3 text-[10px] uppercase tracking-[0.45em] text-white/50">R2 / MOTION</p>
-              <div className="mb-4 text-5xl font-light tracking-[0.08em] text-white md:text-6xl">{loadingPercent}%</div>
-              <div className="h-px w-full overflow-hidden bg-white/10">
-                <div className="h-full bg-white/70 transition-[width] duration-200" style={{ width: loadingPercent + '%' }} />
-              </div>
-              <p className="mt-4 text-[9px] uppercase tracking-[0.28em] text-white/40">
-                Preparing the cinematic experience
-              </p>
-            </div>
-          </div>
-        )}
     </section>
   );
         }
