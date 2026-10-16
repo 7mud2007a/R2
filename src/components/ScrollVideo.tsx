@@ -205,7 +205,7 @@ export default function ScrollVideo() {
   return (
     <section data-scroll-section className="relative h-[1200vh] w-full bg-black">
       <div className={`fixed inset-0 z-30 h-screen w-full overflow-hidden bg-black transition-opacity duration-300 ${visible ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'}`}>
-        <canvas ref={canvasRef} className="absolute inset-0 h-full w-full object-contain" aria-hidden="true" />
+        <canvas ref={canvasRef} className="absolute inset-0 h-full w-full object-cover" aria-hidden="true" />
 
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute left-6 top-1/2 hidden h-px w-16 bg-white/30 md:block" />
