@@ -451,7 +451,7 @@ export default function Footer() {
             </span>
 
             <a
-              href="https://sevenmud-web.onrender.com/"
+              href="https://sevenmud-web-y0dt.onrender.com"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-[#223023]/60 hover:bg-[#223023] text-emerald-300 font-bold border border-emerald-500/20 hover:border-emerald-500/50 transition-all duration-300 hover:scale-105 shadow-sm"
